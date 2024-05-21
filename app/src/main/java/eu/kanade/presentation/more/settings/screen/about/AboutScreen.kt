@@ -255,11 +255,11 @@ object AboutScreen : Screen() {
                         //     icon = Icons.Outlined.Public,
                         //     url = "https://mihon.app",
                         // )
-                        // LinkIcon(
-                        //     label = "Discord",
-                        //     icon = CustomIcons.Discord,
-                        //     url = "https://discord.gg/mihon",
-                        // )
+                        LinkIcon(
+                            label = "Discord",
+                            icon = CustomIcons.Discord,
+                            url = "https://discord.gg/85jB7V5AJR",
+                        )
                         // LinkIcon(
                         //     label = "X",
                         //     icon = CustomIcons.X,

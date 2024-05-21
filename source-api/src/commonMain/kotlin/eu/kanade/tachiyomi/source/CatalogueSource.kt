@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.source
 
+import dev.icerock.moko.graphics.BuildConfig
 import eu.kanade.tachiyomi.source.model.FilterList
 import eu.kanade.tachiyomi.source.model.MangasPage
 import eu.kanade.tachiyomi.source.model.SManga
@@ -119,6 +120,13 @@ interface CatalogueSource : Source {
             .onSuccess { if (it.isNotEmpty()) pushResults(Pair("", it), false) }
             .onFailure { e ->
                 logcat(LogPriority.ERROR, e) { "## getRelatedMangaListByExtension: $e" }
+                throw e
+                if (BuildConfig.BUILD_TYPE != "release") {
+                    throw UnsupportedOperationException(
+                        "Extension doesn't support site's related entries," +
+                            " please report an issue to the author."
+                    )
+                }
             }
     }
 
