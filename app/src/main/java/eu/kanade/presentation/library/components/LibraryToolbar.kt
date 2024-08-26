@@ -1,5 +1,6 @@
 package eu.kanade.presentation.library.components
 
+import android.content.Context
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Row
 import androidx.compose.material.icons.Icons
@@ -14,17 +15,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.sp
 import eu.kanade.presentation.components.AppBar
 import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.components.SearchToolbar
+import eu.kanade.tachiyomi.data.download.DownloadCache
+import eu.kanade.tachiyomi.util.system.toast
 import kotlinx.collections.immutable.persistentListOf
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.Pill
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.theme.active
+import uy.kohesive.injekt.Injekt
+import uy.kohesive.injekt.api.get
+
 
 @Composable
 fun LibraryToolbar(
@@ -84,6 +91,7 @@ private fun LibraryRegularToolbar(
     onClickSyncExh: (() -> Unit)?,
     // SY <--
     scrollBehavior: TopAppBarScrollBehavior?,
+    context: Context = LocalContext.current
 ) {
     val pillAlpha = if (isSystemInDarkTheme()) 0.12f else 0.08f
     SearchToolbar(
@@ -127,6 +135,13 @@ private fun LibraryRegularToolbar(
                     AppBar.OverflowAction(
                         title = stringResource(MR.strings.action_open_random_manga),
                         onClick = onClickOpenRandomManga,
+                    ),
+                    AppBar.OverflowAction(
+                        title = "Invalidate Downloads Index",
+                        onClick = {
+                            Injekt.get<DownloadCache>().invalidateCache()
+                            context.toast(MR.strings.download_cache_invalidated)
+                            },
                     ),
                     AppBar.OverflowAction(
                         title = stringResource(SYMR.strings.sync_library),
