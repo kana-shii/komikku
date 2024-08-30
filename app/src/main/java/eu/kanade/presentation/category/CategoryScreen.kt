@@ -34,6 +34,7 @@ fun CategoryScreen(
     onClickCreate: () -> Unit,
     onClickSortAlphabetically: () -> Unit,
     onClickRename: (Category) -> Unit,
+    onClickHide: (Category) -> Unit,
     onClickDelete: (Category) -> Unit,
     onClickMoveUp: (Category) -> Unit,
     onClickMoveDown: (Category) -> Unit,
@@ -80,6 +81,7 @@ fun CategoryScreen(
             paddingValues = paddingValues + topSmallPaddingValues +
                 PaddingValues(horizontal = MaterialTheme.padding.medium),
             onClickRename = onClickRename,
+            onClickHide = onClickHide,
             onClickDelete = onClickDelete,
             onMoveUp = onClickMoveUp,
             onMoveDown = onClickMoveDown,
@@ -93,6 +95,7 @@ private fun CategoryContent(
     lazyListState: LazyListState,
     paddingValues: PaddingValues,
     onClickRename: (Category) -> Unit,
+    onClickHide: (Category) -> Unit,
     onClickDelete: (Category) -> Unit,
     onMoveUp: (Category) -> Unit,
     onMoveDown: (Category) -> Unit,
@@ -114,6 +117,7 @@ private fun CategoryContent(
                 onMoveUp = onMoveUp,
                 onMoveDown = onMoveDown,
                 onRename = { onClickRename(category) },
+                onHide = { onClickHide(category) },
                 onDelete = { onClickDelete(category) },
             )
         }

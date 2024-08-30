@@ -26,7 +26,9 @@ class CreateCategoryWithName(
             name = name,
             order = nextOrder,
             flags = initialFlags,
-        )
+            hidden = false,
+
+            )
 
         try {
             categoryRepository.insert(newCategory)

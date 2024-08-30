@@ -152,6 +152,8 @@ class LibraryPreferences(
 
     fun categorizedDisplaySettings() = preferenceStore.getBoolean("categorized_display", false)
 
+    fun hideHiddenCategoriesSettings() = preferenceStore.getBoolean("hidden_categories", false)
+
     fun updateCategories() = preferenceStore.getStringSet("library_update_categories", emptySet())
 
     fun updateCategoriesExclude() = preferenceStore.getStringSet(

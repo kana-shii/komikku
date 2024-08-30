@@ -14,36 +14,50 @@ import kotlinx.coroutines.launch
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
 import tachiyomi.domain.category.interactor.DeleteCategory
 import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.interactor.GetVisibleMangaCategories
+import tachiyomi.domain.category.interactor.HideMangaCategory
 import tachiyomi.domain.category.interactor.RenameCategory
 import tachiyomi.domain.category.interactor.ReorderCategory
 import tachiyomi.domain.category.model.Category
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+
+
+
 
 class CategoryScreenModel(
-    private val getCategories: GetCategories = Injekt.get(),
+    private val getAllCategories: GetCategories = Injekt.get(),
+    private val getVisibleCategories: GetVisibleMangaCategories = Injekt.get(),
     private val createCategoryWithName: CreateCategoryWithName = Injekt.get(),
+    private val hideCategory: HideMangaCategory = Injekt.get(),
     private val deleteCategory: DeleteCategory = Injekt.get(),
     private val reorderCategory: ReorderCategory = Injekt.get(),
     private val renameCategory: RenameCategory = Injekt.get(),
-) : StateScreenModel<CategoryScreenState>(CategoryScreenState.Loading) {
+    private val libraryPreferences: LibraryPreferences = Injekt.get(),
+    ) : StateScreenModel<CategoryScreenState>(CategoryScreenState.Loading) {
 
     private val _events: Channel<CategoryEvent> = Channel()
     val events = _events.receiveAsFlow()
 
     init {
         screenModelScope.launch {
-            getCategories.subscribe()
-                .collectLatest { categories ->
-                    mutableState.update {
-                        CategoryScreenState.Success(
-                            categories = categories
-                                .filterNot(Category::isSystemCategory)
-                                .toImmutableList(),
-                        )
-                    }
+            val allCategories = if (libraryPreferences.hideHiddenCategoriesSettings().get()) {
+                getVisibleCategories.subscribe()
+            } else {
+                getAllCategories.subscribe()
+            }
+
+            allCategories.collectLatest { categories ->
+                mutableState.update {
+                    CategoryScreenState.Success(
+                        categories = categories.filterNot(Category::isSystemCategory),
+                    )
                 }
+            }
         }
     }
 
@@ -55,8 +69,16 @@ class CategoryScreenModel(
             }
         }
     }
+    fun hideCategory(category: Category) {
+        coroutineScope.launch {
+            when (hideCategory.await(category)) {
+                is HideMangaCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)
+                else -> {}
+            }
+        }
+    }
 
-    fun deleteCategory(categoryId: Long) {
+        fun deleteCategory(categoryId: Long) {
         screenModelScope.launch {
             when (deleteCategory.await(categoryId = categoryId)) {
                 is DeleteCategory.Result.InternalError -> _events.send(CategoryEvent.InternalError)

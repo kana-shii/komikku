@@ -12,6 +12,7 @@
     <string name="action_move_bottom">Move bottom</string>
     <string name="action_confirm_color">Confirm Color</string>
     <string name="action_remove_merged">Remove merged entries?</string>
+    <string name="action_hide">Hide</string>
 
 
     <!-- Preferences -->
@@ -90,6 +91,9 @@
 
       <!-- About section -->
     <string name="whats_coming">What\'s coming (soon)</string>
+
+    <!-- Category Stuff -->
+    <string name="pref_category_hide_hidden">Hide hidden categories from categories screen</string>
 
     <!-- Manga info -->
     <string name="action_allow_duplicate_manga">Allow it</string>

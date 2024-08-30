@@ -2,18 +2,13 @@ package tachiyomi.data.category
 
 import tachiyomi.domain.category.model.Category
 
-object CategoryMapper {
-    fun mapCategory(
-        id: Long,
-        name: String,
-        order: Long,
-        flags: Long,
-    ): Category {
-        return Category(
+val categoryMapper: (Long, String, Long, Long, Long) -> Category =
+    { id, name, order, flags, hidden ->
+        Category(
             id = id,
             name = name,
             order = order,
             flags = flags,
+            hidden = hidden == 1L,
         )
     }
-}

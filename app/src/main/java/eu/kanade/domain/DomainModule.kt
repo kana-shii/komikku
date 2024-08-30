@@ -46,6 +46,8 @@ import tachiyomi.data.updates.UpdatesRepositoryImpl
 import tachiyomi.domain.category.interactor.CreateCategoryWithName
 import tachiyomi.domain.category.interactor.DeleteCategory
 import tachiyomi.domain.category.interactor.GetCategories
+import tachiyomi.domain.category.interactor.GetVisibleMangaCategories
+import tachiyomi.domain.category.interactor.HideMangaCategory
 import tachiyomi.domain.category.interactor.RenameCategory
 import tachiyomi.domain.category.interactor.ReorderCategory
 import tachiyomi.domain.category.interactor.ResetCategoryFlags
@@ -102,6 +104,7 @@ class DomainModule : InjektModule {
     override fun InjektRegistrar.registerInjectables() {
         addSingletonFactory<CategoryRepository> { CategoryRepositoryImpl(get()) }
         addFactory { GetCategories(get()) }
+        addFactory { GetVisibleMangaCategories(get()) }
         addFactory { ResetCategoryFlags(get(), get()) }
         addFactory { SetDisplayMode(get()) }
         addFactory { SetSortModeForCategory(get(), get()) }
@@ -109,6 +112,7 @@ class DomainModule : InjektModule {
         addFactory { RenameCategory(get()) }
         addFactory { ReorderCategory(get()) }
         addFactory { UpdateCategory(get()) }
+        addFactory { HideMangaCategory(get()) }
         addFactory { DeleteCategory(get()) }
 
         addSingletonFactory<MangaRepository> { MangaRepositoryImpl(get()) }
