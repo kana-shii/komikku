@@ -10,6 +10,8 @@ interface SManga : Serializable {
 
     var title: String
 
+    var alt_titles: String?
+
     var artist: String?
 
     var author: String?
@@ -25,6 +27,10 @@ interface SManga : Serializable {
     var update_strategy: UpdateStrategy
 
     var initialized: Boolean
+
+    fun setAltTitles(altTitles: List<String>?) {
+        alt_titles = altTitles?.joinToString("|~|")
+    }
 
     fun getGenres(): List<String>? {
         if (genre.isNullOrBlank()) return null
@@ -45,6 +51,7 @@ interface SManga : Serializable {
         it.url = url
         // SY -->
         it.title = originalTitle
+        it.alt_titles = alt_titles
         it.artist = originalArtist
         it.author = originalAuthor
         it.thumbnail_url = originalThumbnailUrl
@@ -73,6 +80,7 @@ interface SManga : Serializable {
         operator fun invoke(
             url: String,
             title: String,
+            alt_titles: String? = null,
             artist: String? = null,
             author: String? = null,
             description: String? = null,
@@ -84,6 +92,7 @@ interface SManga : Serializable {
             return create().also {
                 it.url = url
                 it.title = title
+                it.alt_titles = alt_titles
                 it.artist = artist
                 it.author = author
                 it.description = description
@@ -101,6 +110,7 @@ interface SManga : Serializable {
 fun SManga.copy(
     url: String = this.url,
     title: String = this.originalTitle,
+    alt_titles: String? = this.alt_titles,
     artist: String? = this.originalArtist,
     author: String? = this.originalAuthor,
     description: String? = this.originalDescription,
@@ -111,6 +121,7 @@ fun SManga.copy(
 ) = SManga.create().also {
     it.url = url
     it.title = title
+    it.alt_titles = alt_titles
     it.artist = artist
     it.author = author
     it.description = description
