@@ -13,6 +13,12 @@ interface LibraryUpdateErrorRepository {
 
     suspend fun delete(errorId: Long)
 
+    suspend fun deleteMangaError(mangaId: Long)
+
+    suspend fun cleanUnrelevantMangaErrors()
+
+    suspend fun upsert(libraryUpdateError: LibraryUpdateError)
+
     suspend fun insert(libraryUpdateError: LibraryUpdateError)
 
     suspend fun insertAll(libraryUpdateErrors: List<LibraryUpdateError>)

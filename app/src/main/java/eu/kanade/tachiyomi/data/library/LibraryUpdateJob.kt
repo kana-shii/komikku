@@ -35,8 +35,6 @@ import eu.kanade.tachiyomi.source.model.SManga
 import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
-import eu.kanade.tachiyomi.util.storage.getUriCompat
-import eu.kanade.tachiyomi.util.system.createFileInCacheDir
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
@@ -82,7 +80,6 @@ import tachiyomi.domain.library.service.LibraryPreferences.Companion.MANGA_OUTSI
 import tachiyomi.domain.libraryUpdateError.interactor.DeleteLibraryUpdateErrors
 import tachiyomi.domain.libraryUpdateError.interactor.InsertLibraryUpdateErrors
 import tachiyomi.domain.libraryUpdateError.model.LibraryUpdateError
-import tachiyomi.domain.libraryUpdateErrorMessage.interactor.DeleteLibraryUpdateErrorMessages
 import tachiyomi.domain.libraryUpdateErrorMessage.interactor.InsertLibraryUpdateErrorMessages
 import tachiyomi.domain.libraryUpdateErrorMessage.model.LibraryUpdateErrorMessage
 import tachiyomi.domain.manga.interactor.FetchInterval
@@ -101,7 +98,6 @@ import tachiyomi.domain.track.interactor.InsertTrack
 import tachiyomi.i18n.MR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
-import java.io.File
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.concurrent.CopyOnWriteArrayList
@@ -120,10 +116,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val getManga: GetManga = Injekt.get()
     private val updateManga: UpdateManga = Injekt.get()
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get()
-    private val deleteLibraryUpdateErrorMessages: DeleteLibraryUpdateErrorMessages = Injekt.get()
-    private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
-    private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
-    private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
     private val fetchInterval: FetchInterval = Injekt.get()
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get()
 
@@ -144,6 +136,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
     // KMK -->
     private val libraryUpdateStatus: LibraryUpdateStatus = Injekt.get()
+    private val deleteLibraryUpdateErrors: DeleteLibraryUpdateErrors = Injekt.get()
+    private val insertLibraryUpdateErrors: InsertLibraryUpdateErrors = Injekt.get()
+    private val insertLibraryUpdateErrorMessages: InsertLibraryUpdateErrorMessages = Injekt.get()
     // KMK <--
 
     private var mangaToUpdate: List<LibraryManga> = mutableListOf()
@@ -164,6 +159,8 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
 
         // KMK -->
         libraryUpdateStatus.start()
+
+        deleteLibraryUpdateErrors.cleanUnrelevantMangaErrors()
         // KMK <--
 
         setForegroundSafely()
@@ -463,6 +460,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                             // Convert to the manga that contains new chapters
                                             newUpdates.add(manga to newChapters.toTypedArray())
                                         }
+                                        clearErrorFromDB(mangaId = manga.id)
                                     } catch (e: Throwable) {
                                         val errorMessage = when (e) {
                                             is NoChaptersException ->
@@ -474,6 +472,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                             )
                                             else -> e.message
                                         }
+                                        writeErrorToDB(manga to errorMessage)
                                         failedUpdates.add(manga to errorMessage)
                                     }
                                 }
@@ -494,11 +493,8 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         }
 
         if (failedUpdates.isNotEmpty()) {
-            writeErrorsToDB(failedUpdates)
-            val errorFile = writeErrorFile(failedUpdates)
             notifier.showUpdateErrorNotification(
                 failedUpdates.size,
-                errorFile.getUriCompat(context),
             )
         }
     }
@@ -715,39 +711,24 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         )
     }
 
-    /**
-     * Writes basic file of update errors to cache dir.
-     */
-    private fun writeErrorFile(errors: List<Pair<Manga, String?>>): File {
-        try {
-            if (errors.isNotEmpty()) {
-                val file = context.createFileInCacheDir("komikku_update_errors.txt")
-                file.bufferedWriter().use { out ->
-                    out.write(context.stringResource(MR.strings.library_errors_help, ERROR_LOG_HELP_URL) + "\n\n")
-                    // Error file format:
-                    // ! Error
-                    //   # Source
-                    //     - Manga
-                    errors.groupBy({ it.second }, { it.first }).forEach { (error, mangas) ->
-                        out.write("\n! ${error}\n")
-                        mangas.groupBy { it.source }.forEach { (srcId, mangas) ->
-                            val source = sourceManager.getOrStub(srcId)
-                            out.write("  # $source\n")
-                            mangas.forEach {
-                                out.write("    - ${it.title}\n")
-                            }
-                        }
-                    }
-                }
-                return file
-            }
-        } catch (_: Exception) {}
-        return File("")
+    // KMK -->
+    private suspend fun clearErrorFromDB(mangaId: Long) {
+        deleteLibraryUpdateErrors.deleteMangaError(mangaId = mangaId)
+    }
+
+    private suspend fun writeErrorToDB(error: Pair<Manga, String?>) {
+        val errorMessage = error.second ?: "???"
+        val errorMessageId = insertLibraryUpdateErrorMessages.get(errorMessage)
+            ?: insertLibraryUpdateErrorMessages.insert(
+                libraryUpdateErrorMessage = LibraryUpdateErrorMessage(-1L, errorMessage),
+            )
+
+        insertLibraryUpdateErrors.upsert(
+            LibraryUpdateError(id = -1L, mangaId = error.first.id, messageId = errorMessageId),
+        )
     }
 
     private suspend fun writeErrorsToDB(errors: List<Pair<Manga, String?>>) {
-        deleteLibraryUpdateErrorMessages.await()
-        deleteLibraryUpdateErrors.await()
         val libraryErrors = errors.groupBy({ it.second }, { it.first })
         val errorMessages = insertLibraryUpdateErrorMessages.insertAll(
             libraryUpdateErrorMessages = libraryErrors.keys.map { errorMessage ->
@@ -762,6 +743,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         }
         insertLibraryUpdateErrors.insertAll(errorList)
     }
+    // KMK <--
 
     /**
      * Defines what should be updated within a service execution.
