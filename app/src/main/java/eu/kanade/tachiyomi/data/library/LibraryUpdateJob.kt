@@ -36,6 +36,7 @@ import eu.kanade.tachiyomi.source.model.UpdateStrategy
 import eu.kanade.tachiyomi.source.online.all.MergedSource
 import eu.kanade.tachiyomi.util.prepUpdateCover
 import eu.kanade.tachiyomi.util.system.isConnectedToWifi
+import eu.kanade.tachiyomi.util.system.isOnline
 import eu.kanade.tachiyomi.util.system.isRunning
 import eu.kanade.tachiyomi.util.system.setForegroundSafely
 import eu.kanade.tachiyomi.util.system.workManager
@@ -66,6 +67,7 @@ import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.GetChaptersByMangaId
 import tachiyomi.domain.chapter.model.Chapter
 import tachiyomi.domain.chapter.model.NoChaptersException
+import tachiyomi.domain.failed.repository.FailedUpdatesRepository
 import tachiyomi.domain.library.model.GroupLibraryMode
 import tachiyomi.domain.library.model.LibraryGroup
 import tachiyomi.domain.library.model.LibraryManga
@@ -117,6 +119,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
     private val updateManga: UpdateManga = Injekt.get()
     private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get()
     private val fetchInterval: FetchInterval = Injekt.get()
+    private val failedUpdatesManager: FailedUpdatesRepository = Injekt.get()
     private val filterChaptersForDownload: FilterChaptersForDownload = Injekt.get()
 
     // SY -->
@@ -368,7 +371,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         val progressCount = AtomicInteger(0)
         val currentlyUpdatingManga = CopyOnWriteArrayList<Manga>()
         val newUpdates = CopyOnWriteArrayList<Pair<Manga, Array<Chapter>>>()
-        val failedUpdates = CopyOnWriteArrayList<Pair<Manga, String?>>()
+        val failedUpdatesCount = AtomicInteger(0)
         val hasDownloads = AtomicBoolean(false)
         // SY -->
         val mdlistLogged = mdList.isLoggedIn
@@ -377,6 +380,7 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         val fetchWindow = fetchInterval.getWindow(ZonedDateTime.now())
 
         coroutineScope {
+            failedUpdatesManager.removeAllFailedUpdates()
             mangaToUpdate.groupBy { it.manga.source }
                 // SY -->
                 .filterNot { it.key in LIBRARY_UPDATE_EXCLUDED_SOURCES }
@@ -470,10 +474,17 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
                                             is SourceNotInstalledException -> context.stringResource(
                                                 MR.strings.loader_not_implemented_error,
                                             )
-                                            else -> e.message
+                                            else -> e.message ?: "context.getString(MR.strings.exception_unknown)"
+                                        }
+                                        try {
+                                            failedUpdatesCount.getAndIncrement()
+                                            val fullErrorMessage = "${e::class.java.simpleName}: $errorMessage"
+                                            val isOnline = if (context.isOnline()) 1L else 0L
+                                            failedUpdatesManager.insert(manga.id, fullErrorMessage, isOnline)
+                                        } catch (e: Exception) {
+                                            logcat(LogPriority.ERROR, e)
                                         }
                                         writeErrorToDB(manga to errorMessage)
-                                        failedUpdates.add(manga to errorMessage)
                                     }
                                 }
                             }
@@ -492,9 +503,9 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
             }
         }
 
-        if (failedUpdates.isNotEmpty()) {
+        if (failedUpdatesCount.get() > 0) {
             notifier.showUpdateErrorNotification(
-                failedUpdates.size,
+                failedUpdatesCount.get(),
             )
         }
     }
@@ -764,7 +775,6 @@ class LibraryUpdateJob(private val context: Context, workerParams: WorkerParamet
         private const val WORK_NAME_AUTO = "LibraryUpdate-auto"
         private const val WORK_NAME_MANUAL = "LibraryUpdate-manual"
 
-        private const val ERROR_LOG_HELP_URL = "https://mihon.app/docs/guides/troubleshooting/"
 
         private const val MANGA_PER_SOURCE_QUEUE_WARNING_THRESHOLD = 60
 

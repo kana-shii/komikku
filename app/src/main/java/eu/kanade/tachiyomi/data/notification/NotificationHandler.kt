@@ -32,6 +32,24 @@ object NotificationHandler {
     }
 
     /**
+     * Returns [PendingIntent] that opens failed updates screen.
+     *
+     * @param context context of application
+     */
+    internal fun openFailedUpdatesPendingActivity(context: Context): PendingIntent {
+        val intent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            action = Constants.SHORTCUT_FAILED
+        }
+        return PendingIntent.getActivity(
+            context,
+            0,
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+    }
+
+    /**
      * Returns [PendingIntent] that starts a gallery activity
      *
      * @param context context of application

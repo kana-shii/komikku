@@ -148,7 +148,7 @@ class LibraryUpdateNotifier(
     }
 
     /**
-     * Shows notification containing update entries that failed with action to open full log.
+     * Shows notification containing update entries that failed with action to open failed updates screen.
      *
      * @param failed Number of entries that failed to update.
      */
@@ -165,7 +165,7 @@ class LibraryUpdateNotifier(
             setContentText(context.stringResource(MR.strings.action_show_errors))
             setSmallIcon(R.drawable.ic_komikku)
 
-            setContentIntent(NotificationReceiver.openErrorLogPendingActivity(context))
+            setContentIntent(NotificationHandler.openFailedUpdatesPendingActivity(context))
         }
     }
 
