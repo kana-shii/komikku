@@ -67,6 +67,9 @@
     <string name="custom_theme_palette_lcd">LCD</string>
     <string name="custom_theme_palette_pico">PICO-8</string>
 
+    <!-- Reader section -->
+    <string name="pref_webtoon_disable_zoom_in">Disable zoom in</string>
+
     <!-- Library section -->
     <string name="pref_show_updating_progress_banner">Show updating progress banner</string>
     <string name="action_display_source_badge">Source icon</string>

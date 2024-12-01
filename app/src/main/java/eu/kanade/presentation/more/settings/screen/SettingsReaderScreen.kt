@@ -16,6 +16,7 @@ import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toImmutableMap
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
@@ -445,6 +446,10 @@ object SettingsReaderScreen : SearchableSettings {
                 Preference.PreferenceItem.SwitchPreference(
                     pref = readerPreferences.webtoonDisableZoomOut(),
                     title = stringResource(MR.strings.pref_webtoon_disable_zoom_out),
+                ),
+                Preference.PreferenceItem.SwitchPreference(
+                    pref = readerPreferences.webtoonDisableZoomIn(),
+                    title = stringResource(KMR.strings.pref_webtoon_disable_zoom_in),
                 ),
                 // SY -->
                 Preference.PreferenceItem.SwitchPreference(

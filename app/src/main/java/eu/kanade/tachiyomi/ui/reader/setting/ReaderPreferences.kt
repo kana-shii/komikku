@@ -83,6 +83,9 @@ class ReaderPreferences(
 
     fun webtoonDisableZoomOut() = preferenceStore.getBoolean("webtoon_disable_zoom_out", false)
 
+    fun webtoonDisableZoomIn() = preferenceStore.getBoolean("webtoon_disable_zoom_in", false)
+
+
     // endregion
 
     // region Split two page spread

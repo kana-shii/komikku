@@ -32,6 +32,10 @@ class WebtoonConfig(
     var zoomOutDisabled = false
         private set
 
+    var zoomInDisabled = false
+        private set
+
+
     var zoomPropertyChangedListener: ((Boolean) -> Unit)? = null
 
     var sidePadding = 0
@@ -87,6 +91,12 @@ class WebtoonConfig(
         readerPreferences.webtoonDisableZoomOut()
             .register(
                 { zoomOutDisabled = it },
+                { zoomPropertyChangedListener?.invoke(it) },
+            )
+
+        readerPreferences.webtoonDisableZoomIn()
+            .register(
+                { zoomInDisabled = it },
                 { zoomPropertyChangedListener?.invoke(it) },
             )
 
