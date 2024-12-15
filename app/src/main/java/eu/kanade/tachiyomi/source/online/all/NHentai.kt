@@ -55,12 +55,12 @@ class NHentai(delegate: HttpSource, val context: Context) :
     override fun fetchSearchManga(page: Int, query: String, filters: FilterList) =
         urlImportFetchSearchManga(context, query) {
             @Suppress("DEPRECATION")
-            super<DelegatedHttpSource>.fetchSearchManga(page, query, filters)
+            super.fetchSearchManga(page, query, filters)
         }
 
     override suspend fun getSearchManga(page: Int, query: String, filters: FilterList): MangasPage {
         return urlImportFetchSearchMangaSuspend(context, query) {
-            super<DelegatedHttpSource>.getSearchManga(page, query, filters)
+            super.getSearchManga(page, query, filters)
         }
     }
 
