@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Circle
@@ -34,6 +35,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import eu.kanade.tachiyomi.data.download.model.Download
@@ -56,7 +58,7 @@ fun MangaChapterListItem(
     // SY <--
     read: Boolean,
     bookmark: Boolean,
-    fillermark: Boolean, //not an exact copy of the code
+    fillermark: Boolean,
     selected: Boolean,
     downloadIndicatorEnabled: Boolean,
     downloadStateProvider: () -> Download.State,
@@ -131,14 +133,17 @@ fun MangaChapterListItem(
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.primary,
                         )
-                    if (fillermark) {//figure out icon
+                    if (fillermark) {
                         Icon(
-                            imageVector = Icons.Filled.Bookmark,
-                            contentDescription = stringResource(MR.strings.action_filter_bookmarked),
+                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_fillermark_24dp),
+                            contentDescription = stringResource(MR.strings.action_filter_fillermarked),
                             modifier = Modifier
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.primary,
                         )
+                        Spacer(modifier = Modifier.width(2.dp))
+                    }
+
                     Text(
                         text = title,
                         style = MaterialTheme.typography.bodyMedium,
