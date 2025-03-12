@@ -56,6 +56,7 @@ fun MangaChapterListItem(
     // SY <--
     read: Boolean,
     bookmark: Boolean,
+    fillermark: Boolean, //not an exact copy of the code
     selected: Boolean,
     downloadIndicatorEnabled: Boolean,
     downloadStateProvider: () -> Download.State,
@@ -72,6 +73,7 @@ fun MangaChapterListItem(
         action = chapterSwipeStartAction,
         read = read,
         bookmark = bookmark,
+        fillermark = fillermark,
         downloadState = downloadStateProvider(),
         background = MaterialTheme.colorScheme.primaryContainer,
         onSwipe = { onChapterSwipe(chapterSwipeStartAction) },
@@ -80,6 +82,7 @@ fun MangaChapterListItem(
         action = chapterSwipeEndAction,
         read = read,
         bookmark = bookmark,
+        fillermark = fillermark,
         downloadState = downloadStateProvider(),
         background = MaterialTheme.colorScheme.primaryContainer,
         onSwipe = { onChapterSwipe(chapterSwipeEndAction) },
@@ -128,7 +131,14 @@ fun MangaChapterListItem(
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.primary,
                         )
-                    }
+                    if (fillermark) {//figure out icon
+                        Icon(
+                            imageVector = Icons.Filled.Bookmark,
+                            contentDescription = stringResource(MR.strings.action_filter_bookmarked),
+                            modifier = Modifier
+                                .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
                     Text(
                         text = title,
                         style = MaterialTheme.typography.bodyMedium,
@@ -204,6 +214,7 @@ private fun getSwipeAction(
     action: LibraryPreferences.ChapterSwipeAction,
     read: Boolean,
     bookmark: Boolean,
+    fillermark: Boolean,
     downloadState: Download.State,
     background: Color,
     onSwipe: () -> Unit,
@@ -217,6 +228,12 @@ private fun getSwipeAction(
         )
         LibraryPreferences.ChapterSwipeAction.ToggleBookmark -> swipeAction(
             icon = if (!bookmark) Icons.Outlined.BookmarkAdd else Icons.Outlined.BookmarkRemove,
+            background = background,
+            isUndo = bookmark,
+            onSwipe = onSwipe,
+        )
+        LibraryPreferences.ChapterSwipeAction.ToggleFillermark -> swipeAction(
+            icon = if (!bookmark) Icons.Outlined.BookmarkAdd else Icons.Outlined.BookmarkRemove, //figure out icon
             background = background,
             isUndo = bookmark,
             onSwipe = onSwipe,
