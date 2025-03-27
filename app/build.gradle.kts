@@ -39,7 +39,7 @@ android {
 
     buildTypes {
         val debug by getting {
-            applicationIdSuffix = ".dev"
+            applicationIdSuffix = ".debug"
             versionNameSuffix = "-${getCommitCount()}"
             isPseudoLocalesEnabled = true
         }
