@@ -64,7 +64,6 @@ import eu.kanade.tachiyomi.util.system.WebViewUtil
 import eu.kanade.tachiyomi.util.system.animatorDurationScale
 import eu.kanade.tachiyomi.util.system.cancelNotification
 import eu.kanade.tachiyomi.util.system.isDebugBuildType
-import eu.kanade.tachiyomi.util.system.isPreviewBuildType
 import eu.kanade.tachiyomi.util.system.notify
 import eu.kanade.tachiyomi.util.system.telemetryIncluded
 import exh.log.CrashlyticsPrinter
@@ -109,11 +108,7 @@ class App : Application(), DefaultLifecycleObserver, SingletonImageLoader.Factor
     override fun onCreate() {
         super<Application>.onCreate()
         patchInjekt()
-        TelemetryConfig.init(
-            applicationContext,
-            isPreviewBuildType,
-            BuildConfig.COMMIT_COUNT,
-        )
+        TelemetryConfig.init(applicationContext)
 
         // KMK -->
         if (isDebugBuildType) Timber.plant(Timber.DebugTree())
