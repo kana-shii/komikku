@@ -62,7 +62,6 @@ fun UpdateScreen(
     onUpdateWarning: () -> Unit,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
     onMultiBookmarkClicked: (List<UpdatesItem>, bookmark: Boolean) -> Unit,
-    onMultiFillermarkClicked: (List<UpdatesItem>, fillermark: Boolean) -> Unit,
     onMultiMarkAsReadClicked: (List<UpdatesItem>, read: Boolean) -> Unit,
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
     onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean) -> Unit,
@@ -100,7 +99,6 @@ fun UpdateScreen(
                 selected = state.selected,
                 onDownloadChapter = onDownloadChapter,
                 onMultiBookmarkClicked = onMultiBookmarkClicked,
-                onMultiFillermarkClicked = onMultiFillermarkClicked,
                 onMultiMarkAsReadClicked = onMultiMarkAsReadClicked,
                 onMultiDeleteClicked = onMultiDeleteClicked,
             )
@@ -256,7 +254,6 @@ private fun UpdatesBottomBar(
     selected: List<UpdatesItem>,
     onDownloadChapter: (List<UpdatesItem>, ChapterDownloadAction) -> Unit,
     onMultiBookmarkClicked: (List<UpdatesItem>, bookmark: Boolean) -> Unit,
-    onMultiFillermarkClicked: (List<UpdatesItem>, fillermark: Boolean) -> Unit,
     onMultiMarkAsReadClicked: (List<UpdatesItem>, read: Boolean) -> Unit,
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
 ) {
@@ -269,12 +266,6 @@ private fun UpdatesBottomBar(
         onRemoveBookmarkClicked = {
             onMultiBookmarkClicked.invoke(selected, false)
         }.takeIf { selected.fastAll { it.update.bookmark } },
-        onFillermarkClicked = {
-            onMultiFillermarkClicked.invoke(selected, true)
-        }.takeIf { selected.fastAny { !it.update.fillermark } },
-        onRemoveFillermarkClicked = {
-            onMultiFillermarkClicked.invoke(selected, false)
-        }.takeIf { selected.fastAll { it.update.fillermark } },
         onMarkAsReadClicked = {
             onMultiMarkAsReadClicked(selected, true)
         }.takeIf { selected.fastAny { !it.update.read } },

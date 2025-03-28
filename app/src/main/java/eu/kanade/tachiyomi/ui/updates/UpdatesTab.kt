@@ -88,7 +88,6 @@ data object UpdatesTab : Tab {
             onUpdateWarning = { navigator.push(FailedUpdatesScreen()) },
             onDownloadChapter = screenModel::downloadChapters,
             onMultiBookmarkClicked = screenModel::bookmarkUpdates,
-            onMultiFillermarkClicked = screenModel::fillermarkUpdates,
             onMultiMarkAsReadClicked = screenModel::markUpdatesRead,
             onMultiDeleteClicked = screenModel::showConfirmDeleteChapters,
             onUpdateSelected = screenModel::toggleSelection,

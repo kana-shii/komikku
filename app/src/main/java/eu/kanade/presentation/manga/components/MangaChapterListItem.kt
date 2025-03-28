@@ -4,11 +4,9 @@ import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
-import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.filled.Circle
@@ -36,15 +34,12 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.download.model.Download
 import me.saket.swipe.SwipeableActionsBox
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.material.DISABLED_ALPHA
 import tachiyomi.presentation.core.components.material.SECONDARY_ALPHA
 import tachiyomi.presentation.core.i18n.stringResource
@@ -61,7 +56,6 @@ fun MangaChapterListItem(
     // SY <--
     read: Boolean,
     bookmark: Boolean,
-    fillermark: Boolean,
     selected: Boolean,
     downloadIndicatorEnabled: Boolean,
     downloadStateProvider: () -> Download.State,
@@ -78,7 +72,6 @@ fun MangaChapterListItem(
         action = chapterSwipeStartAction,
         read = read,
         bookmark = bookmark,
-        fillermark = fillermark,
         downloadState = downloadStateProvider(),
         background = MaterialTheme.colorScheme.primaryContainer,
         onSwipe = { onChapterSwipe(chapterSwipeStartAction) },
@@ -87,7 +80,6 @@ fun MangaChapterListItem(
         action = chapterSwipeEndAction,
         read = read,
         bookmark = bookmark,
-        fillermark = fillermark,
         downloadState = downloadStateProvider(),
         background = MaterialTheme.colorScheme.primaryContainer,
         onSwipe = { onChapterSwipe(chapterSwipeEndAction) },
@@ -136,16 +128,6 @@ fun MangaChapterListItem(
                                 .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
                             tint = MaterialTheme.colorScheme.primary,
                         )
-                    }
-                    if (fillermark) {
-                        Icon(
-                            imageVector = ImageVector.vectorResource(id = R.drawable.ic_fillermark_24dp),
-                            contentDescription = stringResource(KMR.strings.action_filter_fillermarked),
-                            modifier = Modifier
-                                .sizeIn(maxHeight = with(LocalDensity.current) { textHeight.toDp() - 2.dp }),
-                            tint = MaterialTheme.colorScheme.tertiary,
-                        )
-                        Spacer(modifier = Modifier.width(2.dp))
                     }
                     Text(
                         text = title,
@@ -218,12 +200,10 @@ fun MangaChapterListItem(
     }
 }
 
-@Composable
 private fun getSwipeAction(
     action: LibraryPreferences.ChapterSwipeAction,
     read: Boolean,
     bookmark: Boolean,
-    fillermark: Boolean,
     downloadState: Download.State,
     background: Color,
     onSwipe: () -> Unit,
@@ -241,20 +221,6 @@ private fun getSwipeAction(
             isUndo = bookmark,
             onSwipe = onSwipe,
         )
-        LibraryPreferences.ChapterSwipeAction.ToggleFillermark -> {
-            val icon = if (!fillermark) {
-                ImageVector.vectorResource(id = R.drawable.ic_fillermark_24dp)
-            } else {
-                ImageVector.vectorResource(id = R.drawable.ic_fillermark_border_24dp)
-            }
-            swipeAction(
-                icon = icon,
-                background = background,
-                isUndo = bookmark,
-                onSwipe = onSwipe,
-            )
-        }
-        // <-- AM (FILLERMARK)
         LibraryPreferences.ChapterSwipeAction.Download -> swipeAction(
             icon = when (downloadState) {
                 Download.State.NOT_DOWNLOADED, Download.State.ERROR -> Icons.Outlined.Download
