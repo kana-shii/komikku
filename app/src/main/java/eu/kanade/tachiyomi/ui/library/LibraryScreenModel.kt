@@ -533,7 +533,7 @@ class LibraryScreenModel(
             libraryPreferences.sourceBadge().changes(),
             libraryPreferences.useLangIcon().changes(),
             // KMK <--
-) {
+        ) {
             ItemPreferences(
                 downloadBadge = it[0] as Boolean,
                 unreadBadge = it[1] as Boolean,
