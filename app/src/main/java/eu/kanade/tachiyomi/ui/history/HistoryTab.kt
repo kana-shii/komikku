@@ -119,20 +119,18 @@ data object HistoryTab : Tab {
                     onConfirm = {
                         screenModel.addFavorite(dialog.manga)
                     },
-                    onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+                    onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     onMigrate = {
                         // KMK -->
                         PreMigrationScreen.navigateToMigration(
                             Injekt.get<UnsortedPreferences>().skipPreMigration().get(),
                             navigator,
-                            dialog.duplicate.id,
+                            it.id,
                             dialog.manga.id,
                         )
                         // KMK <--
                     },
-                    // KMK -->
-                    duplicate = dialog.duplicate,
-                    // KMK <--
+                    duplicateManga = dialog.duplicates,
                 )
             }
             is HistoryScreenModel.Dialog.ChangeCategory -> {

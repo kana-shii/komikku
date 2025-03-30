@@ -474,12 +474,12 @@ class MangaScreen(
                 DuplicateMangaDialog(
                     onDismissRequest = onDismissRequest,
                     onConfirm = { screenModel.toggleFavorite(onRemoved = {}, checkDuplicate = false) },
-                    onOpenManga = { navigator.push(MangaScreen(dialog.duplicate.id)) },
+                    onOpenManga = { navigator.push(MangaScreen(it.id)) },
                     onMigrate = {
                         // SY -->
-                        migrateManga(navigator, dialog.duplicate, screenModel.manga!!.id)
-                        // SY <--
+                        migrateManga(navigator, dialog.duplicates.first(), screenModel.manga!!.id)                        // SY <--
                     },
+                    duplicateManga = dialog.duplicates,
                 )
             }
 
