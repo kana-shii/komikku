@@ -467,9 +467,6 @@ data class BrowseSourceScreen(
                         )
                         // SY <--
                     },
-                    // KMK -->
-                    duplicate = dialog.duplicate,
-                    // KMK <--
                 )
             }
             is BrowseSourceScreenModel.Dialog.RemoveManga -> {

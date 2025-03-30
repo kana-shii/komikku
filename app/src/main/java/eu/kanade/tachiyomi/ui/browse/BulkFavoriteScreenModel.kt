@@ -456,7 +456,6 @@ fun AddDuplicateMangaDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
                 dialog.manga.id,
             )
         },
-        duplicate = dialog.duplicate,
     )
 }
 
@@ -529,9 +528,8 @@ fun AllowDuplicateDialog(bulkFavoriteScreenModel: BulkFavoriteScreenModel) {
             bulkFavoriteScreenModel.removeDuplicateSelectedManga(index = dialog.duplicatedManga.first)
             bulkFavoriteScreenModel.addFavorite(startIdx = dialog.duplicatedManga.first)
         },
-        mangaName = dialog.duplicatedManga.second.title,
+        duplicatedName = dialog.duplicatedManga.second.title,
         stopRunning = bulkFavoriteScreenModel::stopRunning,
-        duplicate = dialog.duplicatedManga.second,
     )
 }
 
