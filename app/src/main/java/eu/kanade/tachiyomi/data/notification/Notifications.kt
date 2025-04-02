@@ -10,6 +10,7 @@ import eu.kanade.tachiyomi.util.system.buildNotificationChannel
 import eu.kanade.tachiyomi.util.system.buildNotificationChannelGroup
 import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.i18n.MR
+import tachiyomi.i18n.kmk.KMR
 
 /**
  * Class to manage the basic information of all the notifications used in the app.
@@ -176,7 +177,7 @@ object Notifications {
                     setName(context.stringResource(MR.strings.pref_incognito_mode))
                 },
                 buildNotificationChannel(CHANNEL_DISCORD_RPC, IMPORTANCE_LOW) {
-                    setName(context.stringResource(MR.strings.pref_discord_rpc))
+                    setName(context.stringResource(KMR.strings.pref_discord_rpc))
                 },
                 buildNotificationChannel(CHANNEL_APP_UPDATE, IMPORTANCE_HIGH) {
                     setGroup(GROUP_APK_UPDATES)

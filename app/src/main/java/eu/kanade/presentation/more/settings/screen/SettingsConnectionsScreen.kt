@@ -28,6 +28,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import tachiyomi.i18n.kmk.KMR
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
@@ -80,7 +81,7 @@ object SettingsConnectionsScreen : SearchableSettings {
 
         return listOf(
             Preference.PreferenceGroup(
-                title = stringResource(MR.strings.special_services),
+                title = stringResource(KMR.strings.special_services),
                 preferenceItems = persistentListOf(
                     Preference.PreferenceItem.ConnectionsPreference(
                         title = stringResource(connectionsManager.discord.nameRes()),
@@ -90,8 +91,8 @@ object SettingsConnectionsScreen : SearchableSettings {
                         },
                         openSettings = { navigator.push(SettingsDiscordScreen) },
                     ),
-                    Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.connections_discord_info)),
-                    Preference.PreferenceItem.InfoPreference(stringResource(MR.strings.connections_info)),
+                    Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.connections_discord_info)),
+                    Preference.PreferenceItem.InfoPreference(stringResource(KMR.strings.connections_info)),
                 ),
             ),
         )
@@ -117,7 +118,7 @@ object SettingsConnectionsScreen : SearchableSettings {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
                         text = stringResource(
-                            MR.strings.login_title,
+                            KMR.strings.login_title,
                             stringResource(service.nameRes()),
                         ),
                         modifier = Modifier.weight(1f),
