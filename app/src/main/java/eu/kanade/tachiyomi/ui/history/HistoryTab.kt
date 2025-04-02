@@ -27,6 +27,8 @@ import eu.kanade.presentation.history.components.HistoryDeleteDialog
 import eu.kanade.presentation.manga.DuplicateMangaDialog
 import eu.kanade.presentation.util.Tab
 import eu.kanade.tachiyomi.R
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.ui.browse.migration.advanced.design.PreMigrationScreen
 import eu.kanade.tachiyomi.ui.category.CategoryScreen
 import eu.kanade.tachiyomi.ui.main.MainActivity
@@ -170,6 +172,10 @@ data object HistoryTab : Tab {
             resumeLastChapterReadEvent.receiveAsFlow().collectLatest {
                 openChapter(context, screenModel.getNextChapter())
             }
+        }
+
+        LaunchedEffect(Unit) {
+            DiscordRPCService.setScreen(context, DiscordScreen.HISTORY)
         }
     }
 

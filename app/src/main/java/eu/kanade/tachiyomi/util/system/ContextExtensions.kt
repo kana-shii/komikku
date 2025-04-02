@@ -16,6 +16,7 @@ import androidx.core.net.toUri
 import com.hippo.unifile.UniFile
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.domain.ui.model.ThemeMode
+import eu.kanade.tachiyomi.ui.setting.connections.DiscordLoginActivity
 import eu.kanade.tachiyomi.BuildConfig
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.ui.base.delegate.ThemingDelegate
@@ -69,6 +70,15 @@ fun Context.openInBrowser(uri: Uri, forceDefaultBrowser: Boolean = false) {
                 defaultBrowserPackageName()?.let { setPackage(it) }
             }
         }
+        startActivity(intent)
+    } catch (e: Exception) {
+        toast(e.message)
+    }
+}
+
+fun Context.openDiscordLoginActivity() {
+    try {
+        val intent = Intent(this, DiscordLoginActivity::class.java)
         startActivity(intent)
     } catch (e: Exception) {
         toast(e.message)

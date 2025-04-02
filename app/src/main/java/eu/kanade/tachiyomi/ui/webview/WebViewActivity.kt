@@ -6,6 +6,10 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import androidx.lifecycle.lifecycleScope
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
+import tachiyomi.core.common.util.lang.launchIO
 import android.widget.Toast
 import androidx.core.net.toUri
 import eu.kanade.presentation.webview.WebViewScreenContent
@@ -79,6 +83,17 @@ class WebViewActivity : BaseActivity() {
                 onClearCookies = this::clearCookies,
             )
         }
+
+        lifecycleScope.launchIO {
+            DiscordRPCService.setScreen(this@WebViewActivity, DiscordScreen.WEBVIEW)
+        }
+    }
+
+    override fun onDestroy() {
+        lifecycleScope.launchIO {
+            DiscordRPCService.setScreen(this@WebViewActivity, DiscordRPCService.lastUsedScreen)
+        }
+        super.onDestroy()
     }
 
     override fun onProvideAssistContent(outContent: AssistContent) {

@@ -8,6 +8,10 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import eu.kanade.domain.base.BasePreferences
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
+import eu.kanade.tachiyomi.data.connections.discord.ReaderData
 import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.material3.MaterialTheme
@@ -263,6 +267,12 @@ class MangaScreen(
                     )
                 }
                 .launchIn(this)
+
+            DiscordRPCService.setScreen(context, DiscordScreen.LIBRARY, ReaderData(
+                incognitoMode = Injekt.get<BasePreferences>().incognitoMode().get(),
+                mangaId = successState.manga.id,
+                chapterTitle = successState.manga.title,
+            ))
         }
         // SY <--
 

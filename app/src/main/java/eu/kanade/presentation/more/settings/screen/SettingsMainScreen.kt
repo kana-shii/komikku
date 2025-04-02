@@ -8,7 +8,6 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ChromeReaderMode
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.Explore
@@ -45,6 +44,7 @@ import eu.kanade.presentation.more.settings.widget.TextPreferenceWidget
 import eu.kanade.presentation.util.LocalBackPress
 import eu.kanade.presentation.util.Screen
 import exh.assets.EhAssets
+import androidx.compose.material.icons.outlined.Link
 import exh.assets.ehassets.EhLogo
 import exh.assets.ehassets.MangadexLogo
 import kotlinx.collections.immutable.persistentListOf
@@ -209,6 +209,12 @@ object SettingsMainScreen : Screen() {
             subtitleRes = MR.strings.pref_tracking_summary,
             icon = Icons.Outlined.Sync,
             screen = SettingsTrackingScreen,
+        ),
+        Item(
+            titleRes = KMR.string.pref_category_connections,
+            subtitleRes = KMR.string.pref_connections_summary,
+            icon = Icons.Outlined.Link,
+            screen = SettingsConnectionsScreen,
         ),
         Item(
             titleRes = MR.strings.browse,

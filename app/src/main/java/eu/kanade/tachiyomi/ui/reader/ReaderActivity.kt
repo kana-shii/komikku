@@ -66,6 +66,11 @@ import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.manga.model.readingMode
+import android.util.Log
+import androidx.lifecycle.viewModelScope
+import eu.kanade.domain.connections.service.ConnectionsPreferences
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.ReaderData
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
 import eu.kanade.presentation.reader.DisplayRefreshHost
@@ -163,7 +168,9 @@ class ReaderActivity : BaseActivity() {
                 addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
             }
         }
+        private val connectionsPreferences: ConnectionsPreferences = Injekt.get()
     }
+
 
     private val readerPreferences = Injekt.get<ReaderPreferences>()
     private val preferences = Injekt.get<BasePreferences>()
@@ -281,6 +288,9 @@ class ReaderActivity : BaseActivity() {
                     ReaderViewModel.Event.ReloadViewerChapters -> {
                         viewModel.state.value.viewerChapters?.let(::setChapters)
                     }
+                    ReaderViewModel.Event.ChapterChanged -> {
+                        updateDiscordRPC(exitingReader = false)
+                    }
                     ReaderViewModel.Event.PageChanged -> {
                         displayRefreshHost.flash()
                     }
@@ -313,6 +323,7 @@ class ReaderActivity : BaseActivity() {
         config = null
         menuToggleToast?.cancel()
         readingModeToast?.cancel()
+        updateDiscordRPC(exitingReader = true)
     }
 
     override fun onPause() {
@@ -1520,6 +1531,38 @@ class ReaderActivity : BaseActivity() {
         private fun setLayerPaint(grayscale: Boolean, invertedColors: Boolean) {
             val paint = if (grayscale || invertedColors) getCombinedPaint(grayscale, invertedColors) else null
             binding.viewerContainer.setLayerType(LAYER_TYPE_HARDWARE, paint)
+        }
+    }
+
+    /**
+     * Updates the Discord Rich Presence (RPC) status based on the current reader activity.
+     *
+     * @param exitingReader A boolean flag indicating whether the user is exiting the reader.
+     * If true, the Discord RPC status is set to the last used screen.
+     * If false, the Discord RPC status is set to the current reader activity, displaying details such as the manga title, chapter number, and chapter title.
+     */
+    private fun updateDiscordRPC(exitingReader: Boolean) {
+        if (connectionsPreferences.enableDiscordRPC().get()) {
+            viewModel.viewModelScope.launchIO {
+                if (!exitingReader) {
+                    val currentChapter = viewModel.state.value.currentChapter?.chapter
+                    DiscordRPCService.setReaderActivity(
+                        context = this@ReaderActivity,
+                        ReaderData(
+                            incognitoMode = viewModel.incognitoMode,    // viewModel.currentSource.isNsfw()
+                            mangaId = viewModel.manga?.id,
+                            mangaTitle = viewModel.manga?.title,
+                            thumbnailUrl = viewModel.manga?.thumbnailUrl,
+                            chapterNumber = Pair(currentChapter?.chapter_number ?: -1f, viewModel.getChapters().size),
+                            chapterTitle = if(connectionsPreferences.useChapterTitles().get()) currentChapter?.name
+                            else currentChapter?.chapter_number.toString(),
+                        ),
+                    )
+                } else {
+                    Log.d("discord_rpc_tachiyomi", "Exiting reader, setting last used screen")
+                    DiscordRPCService.setScreen(this@ReaderActivity, DiscordRPCService.lastUsedScreen)
+                }
+            }
         }
     }
 }

@@ -76,9 +76,12 @@ import eu.kanade.tachiyomi.data.coil.MangaCoverMetadata
 import eu.kanade.tachiyomi.data.download.DownloadCache
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.updater.AppUpdateChecker
+import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.tachiyomi.data.updater.AppUpdateJob
 import eu.kanade.tachiyomi.extension.api.ExtensionApi
 import eu.kanade.tachiyomi.ui.base.activity.BaseActivity
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.DiscordScreen
 import eu.kanade.tachiyomi.ui.browse.source.browse.BrowseSourceScreen
 import eu.kanade.tachiyomi.ui.browse.source.globalsearch.GlobalSearchScreen
 import eu.kanade.tachiyomi.ui.deeplink.DeepLinkScreen
@@ -146,6 +149,8 @@ class MainActivity : BaseActivity() {
     var ready = false
 
     private var navigator: Navigator? = null
+
+    private val connectionsPreferences: ConnectionsPreferences by injectLazy()
 
     init {
         registerSecureActivity(this)
@@ -333,6 +338,24 @@ class MainActivity : BaseActivity() {
                             }
                         }
                         .launchIn(this)
+
+                    connectionsPreferences.enableDiscordRPC().changes()
+                        .drop(1)
+                        .onEach {
+                            if (it) {
+                                DiscordRPCService.start(this@MainActivity.applicationContext)
+                            } else {
+                                DiscordRPCService.stop(this@MainActivity.applicationContext, 0L)
+                            }
+                        }.launchIn(this)
+
+                    connectionsPreferences.discordRPCStatus().changes()
+                        .drop(1)
+                        .onEach {
+                            DiscordRPCService.stop(this@MainActivity.applicationContext, 0L)
+                            DiscordRPCService.start(this@MainActivity.applicationContext)
+                            DiscordRPCService.setScreen(this@MainActivity, DiscordScreen.MORE)
+                        }.launchIn(this)
                 }
 
                 HandleOnNewIntent(context = context, navigator = navigator)
