@@ -1,9 +1,7 @@
 package eu.kanade.presentation.browse
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,10 +10,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,7 +33,9 @@ import eu.kanade.presentation.browse.components.GlobalSearchCardRow
 import eu.kanade.presentation.browse.components.GlobalSearchErrorResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchLoadingResultItem
 import eu.kanade.presentation.browse.components.GlobalSearchResultItem
+import eu.kanade.presentation.browse.components.SourceIcon
 import eu.kanade.tachiyomi.source.CatalogueSource
+import eu.kanade.tachiyomi.source.getNameForMangaInfo
 import eu.kanade.tachiyomi.ui.browse.feed.FeedScreenState
 import kotlinx.collections.immutable.ImmutableList
 import kotlinx.collections.immutable.toImmutableList
@@ -43,11 +44,12 @@ import tachiyomi.core.common.i18n.stringResource
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.domain.source.model.FeedSavedSearch
 import tachiyomi.domain.source.model.SavedSearch
+import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.PullRefresh
+import tachiyomi.presentation.core.components.material.padding
 import tachiyomi.presentation.core.components.material.topSmallPaddingValues
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.screens.EmptyScreen
@@ -71,7 +73,7 @@ fun FeedScreen(
     onClickSavedSearch: (SavedSearch, CatalogueSource) -> Unit,
     onClickSource: (CatalogueSource) -> Unit,
     // KMK -->
-    onLongClickFeed: (FeedItemUI, FeedSavedSearch?, FeedSavedSearch?) -> Unit,
+    onLongClickFeed: (FeedItemUI, Boolean, Boolean) -> Unit,
     // KMK <--
     onClickManga: (Manga) -> Unit,
     // KMK -->
@@ -109,15 +111,10 @@ fun FeedScreen(
                 ) {
                     // KMK -->
                     val feeds = state.items.orEmpty()
-                    // KMK <--
-                    items(
-                        feeds,
-                        key = { "feed-${it.feed.id}" },
-                    ) { item ->
-                        // KMK -->
-                        val index = feeds.indexOf(item)
-                        val prevFeed = feeds.getOrNull(index - 1)
-                        val nextFeed = feeds.getOrNull(index + 1)
+                    itemsIndexed(
+                        items = feeds,
+                        key = { _, it -> "feed-${it.feed.id}" },
+                    ) { index, item ->
                         // KMK <--
                         GlobalSearchResultItem(
                             modifier = Modifier.animateItem(),
@@ -125,7 +122,11 @@ fun FeedScreen(
                             subtitle = item.subtitle,
                             onLongClick = {
                                 // KMK -->
-                                onLongClickFeed(item, prevFeed?.feed, nextFeed?.feed)
+                                onLongClickFeed(
+                                    item,
+                                    index != 0,
+                                    index != feeds.lastIndex,
+                                )
                                 // KMK <--
                             },
                             onClick = {
@@ -190,19 +191,56 @@ fun FeedAddDialog(
     onDismiss: () -> Unit,
     onClickAdd: (CatalogueSource?) -> Unit,
 ) {
+    // KMK -->
+    var query by remember { mutableStateOf("") }
+    val sourceList = sources
+        .filter { source ->
+            if (query.isBlank()) return@filter true
+            query.split(",").any {
+                val input = it.trim()
+                if (input.isEmpty()) return@any false
+                source.name.contains(input, ignoreCase = true) ||
+                    source.id == input.toLongOrNull()
+            }
+        }
+    val composeOptions: List<@Composable () -> Unit> = sourceList
+        .map {
+            {
+                val source = Source(
+                    id = it.id,
+                    lang = it.lang,
+                    name = it.name,
+                    supportsLatest = it.supportsLatest,
+                    isStub = false,
+                )
+                SourceIcon(source = source)
+                Spacer(modifier = Modifier.width(MaterialTheme.padding.extraSmall))
+                Text(text = it.getNameForMangaInfo())
+            }
+        }
+    // KMK <--
     var selected by remember { mutableStateOf<Int?>(null) }
     AlertDialog(
         title = {
             Text(text = stringResource(SYMR.strings.feed))
         },
         text = {
-            RadioSelector(options = sources, selected = selected) {
+            // KMK -->
+            RadioSelectorSearchable(
+                options = composeOptions,
+                queryString = query,
+                onChangeSearchQuery = {
+                    query = it ?: ""
+                },
+                // KMK <--
+                selected = selected,
+            ) {
                 selected = it
             }
         },
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = { onClickAdd(selected?.let { sources[it] }) }) {
+            TextButton(onClick = { onClickAdd(selected?.let { sourceList[it] }) }) {
                 Text(text = stringResource(MR.strings.action_ok))
             }
         },
@@ -237,7 +275,7 @@ fun FeedAddSearchDialog(
                     // KMK <--
                 }.toImmutableList()
             }
-            RadioSelector(
+            RadioSelectorSearchable(
                 options = savedSearches,
                 optionStrings = savedSearchStrings,
                 selected = selected,
@@ -260,7 +298,7 @@ fun FeedAddSearchDialog(
 }
 
 @Composable
-fun <T> RadioSelector(
+fun <T> RadioSelectorSearchable(
     options: ImmutableList<T>,
     optionStrings: ImmutableList<String> = remember { options.map { it.toString() }.toImmutableList() },
     selected: Int?,
@@ -276,71 +314,43 @@ fun <T> RadioSelector(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 RadioButton(selected == index, onClick = null)
-                Spacer(Modifier.width(4.dp))
+                Spacer(Modifier.width(MaterialTheme.padding.extraSmall))
                 Text(option, maxLines = 1)
             }
         }
     }
 }
 
-@Composable
-fun FeedDeleteConfirmDialog(
-    feed: FeedSavedSearch,
-    onDismiss: () -> Unit,
-    onClickDeleteConfirm: (FeedSavedSearch) -> Unit,
-) {
-    AlertDialog(
-        title = {
-            Text(text = stringResource(SYMR.strings.feed))
-        },
-        text = {
-            Text(text = stringResource(SYMR.strings.feed_delete))
-        },
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            TextButton(onClick = { onClickDeleteConfirm(feed) }) {
-                Text(text = stringResource(MR.strings.action_delete))
-            }
-        },
-    )
-}
-
 // KMK -->
 @Composable
-fun FeedActionsDialog(
-    feedItem: FeedItemUI,
-    hasPrevFeed: Boolean,
-    hasNextFeed: Boolean,
-    onDismiss: () -> Unit,
-    onClickDelete: () -> Unit,
-    onMoveUp: () -> Unit,
-    onMoveDown: () -> Unit,
-    onMoveBottom: () -> Unit,
+fun RadioSelectorSearchable(
+    options: List<@Composable () -> Unit>,
+    queryString: String? = null,
+    onChangeSearchQuery: ((String?) -> Unit)? = null,
+    selected: Int?,
+    onSelectOption: (Int) -> Unit = {},
 ) {
-    AlertDialog(
-        title = {
-            Text(text = stringResource(SYMR.strings.feed))
-        },
-        text = {
-            Text(text = if (feedItem.savedSearch != null) feedItem.savedSearch.name else feedItem.source?.name ?: "")
-        },
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            FlowRow(horizontalArrangement = Arrangement.SpaceEvenly) {
-                TextButton(onClick = onMoveUp, enabled = hasPrevFeed) {
-                    Text(text = stringResource(KMR.strings.action_move_up))
-                }
-                TextButton(onClick = onMoveDown, enabled = hasNextFeed) {
-                    Text(text = stringResource(KMR.strings.action_move_down))
-                }
-                TextButton(onClick = onMoveBottom, enabled = hasNextFeed) {
-                    Text(text = stringResource(KMR.strings.action_move_bottom))
-                }
-                TextButton(onClick = onClickDelete) {
-                    Text(text = stringResource(MR.strings.action_delete))
-                }
+    Column(Modifier.verticalScroll(rememberScrollState())) {
+        SourcesSearch(
+            searchQuery = queryString,
+            onChangeSearchQuery = onChangeSearchQuery ?: {},
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = MaterialTheme.padding.small),
+        ).takeIf { onChangeSearchQuery != null }
+        options.forEachIndexed { index, option ->
+            Row(
+                Modifier
+                    .fillMaxWidth()
+                    .height(48.dp)
+                    .clickable { onSelectOption(index) },
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                RadioButton(selected == index, onClick = null)
+                Spacer(Modifier.width(MaterialTheme.padding.extraSmall))
+                option()
             }
-        },
-    )
+        }
+    }
 }
 // KMK <--

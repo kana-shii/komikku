@@ -26,6 +26,8 @@ import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.core.net.toUri
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -114,6 +116,7 @@ import uy.kohesive.injekt.api.get
 
 class MangaScreen(
     private val mangaId: Long,
+    /** If it is opened from Source then it will auto expand the manga description */
     val fromSource: Boolean = false,
     private val smartSearchConfig: SourcesScreen.SmartSearchConfig? = null,
 ) : Screen(), AssistContentScreen {
@@ -132,10 +135,18 @@ class MangaScreen(
         val navigator = LocalNavigator.currentOrThrow
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
+        val lifecycleOwner = LocalLifecycleOwner.current
         val screenModel =
-            rememberScreenModel { MangaScreenModel(context, mangaId, fromSource, smartSearchConfig != null) }
+            rememberScreenModel {
+                MangaScreenModel(
+                    context, lifecycleOwner.lifecycle, mangaId, fromSource,
+                    // SY -->
+                    smartSearchConfig != null,
+                    // SY <--
+                )
+            }
 
-        val state by screenModel.state.collectAsState()
+        val state by screenModel.state.collectAsStateWithLifecycle()
 
         if (state is MangaScreenModel.State.Loading) {
             LoadingScreen()
@@ -481,7 +492,7 @@ class MangaScreen(
                     )
                     // KMK <--
                     MangaCoverDialog(
-                        coverDataProvider = { manga!! },
+                        manga = manga!!,
                         snackbarHostState = sm.snackbarHostState,
                         isCustomCover = remember(manga) { manga!!.hasCustomCover() },
                         onShareClick = { sm.shareCover(context) },
@@ -560,6 +571,7 @@ class MangaScreen(
         context.startActivity(ReaderActivity.newIntent(context, chapter.mangaId, chapter.id))
     }
 
+    @Suppress("LocalVariableName")
     private fun getMangaUrl(manga_: Manga?, source_: Source?): String? {
         val manga = manga_ ?: return null
         val source = source_ as? HttpSource ?: return null
@@ -571,6 +583,7 @@ class MangaScreen(
         }
     }
 
+    @Suppress("LocalVariableName")
     private fun openMangaInWebView(navigator: Navigator, manga_: Manga?, source_: Source?) {
         getMangaUrl(manga_, source_)?.let { url ->
             navigator.push(
@@ -583,6 +596,7 @@ class MangaScreen(
         }
     }
 
+    @Suppress("LocalVariableName")
     private fun shareManga(context: Context, manga_: Manga?, source_: Source?) {
         try {
             getMangaUrl(manga_, source_)?.let { url ->
@@ -692,6 +706,7 @@ class MangaScreen(
     /**
      * Copy Manga URL to Clipboard
      */
+    @Suppress("LocalVariableName")
     private fun copyMangaUrl(context: Context, manga_: Manga?, source_: Source?) {
         val manga = manga_ ?: return
         val source = source_ as? HttpSource ?: return
@@ -776,7 +791,13 @@ class MangaScreen(
 
                 navigator.popUntil { it is SourcesScreen }
                 navigator.pop()
-                navigator replace MangaScreen(mergedManga.id, true)
+                // KMK -->
+                if (navigator.lastItem !is MangaScreen) {
+                    navigator push MangaScreen(mergedManga.id)
+                } else {
+                    // KMK <--
+                    navigator replace MangaScreen(mergedManga.id)
+                }
                 context.toast(SYMR.strings.entry_merged)
             } catch (e: Exception) {
                 if (e is CancellationException) throw e

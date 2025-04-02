@@ -20,6 +20,7 @@ import eu.kanade.core.util.fastMapNotNull
 import eu.kanade.core.util.fastPartition
 import eu.kanade.domain.base.BasePreferences
 import eu.kanade.domain.chapter.interactor.SetReadStatus
+import eu.kanade.domain.manga.interactor.SmartSearchMerge
 import eu.kanade.domain.manga.interactor.UpdateManga
 import eu.kanade.domain.source.service.SourcePreferences
 import eu.kanade.presentation.components.SEARCH_DEBOUNCE_MILLIS
@@ -154,6 +155,9 @@ class LibraryScreenModel(
     private val setCustomMangaInfo: SetCustomMangaInfo = Injekt.get(),
     private val getMergedChaptersByMangaId: GetMergedChaptersByMangaId = Injekt.get(),
     // SY <--
+    // KMK -->
+    private val smartSearchMerge: SmartSearchMerge = Injekt.get(),
+    // KMK <--
 ) : StateScreenModel<LibraryScreenModel.State>(State()) {
 
     var activeCategoryIndex: Int by libraryPreferences.lastUsedCategory().asState(screenModelScope)
@@ -588,7 +592,13 @@ class LibraryScreenModel(
                 .groupBy { it.libraryManga.category }
         }
 
-        return combine(getCategories.subscribe(), libraryMangasFlow) { categories, libraryManga ->
+        return combine(
+            // KMK -->
+            libraryPreferences.showHiddenCategories().changes(),
+            // KMK <--
+            getCategories.subscribe(),
+            libraryMangasFlow,
+        ) { showHiddenCategories, categories, libraryManga ->
             val displayCategories = if (libraryManga.isNotEmpty() && !libraryManga.containsKey(0)) {
                 categories.fastFilterNot { it.isSystemCategory }
             } else {
@@ -600,7 +610,11 @@ class LibraryScreenModel(
                 state.copy(ogCategories = displayCategories)
             }
             // SY <--
-            displayCategories.associateWith { libraryManga[it.id].orEmpty() }
+            displayCategories
+                // KMK -->
+                .filterNot { !showHiddenCategories && it.hidden }
+                // KMK <--
+                .associateWith { libraryManga[it.id].orEmpty() }
         }
     }
 
@@ -615,6 +629,9 @@ class LibraryScreenModel(
                         preferences.context.stringResource(SYMR.strings.ungrouped),
                         0,
                         0,
+                        // KMK -->
+                        false,
+                        // KMK <--
                     ) to
                         values.flatten().distinctBy { it.libraryManga.manga.id },
                 )
@@ -1279,6 +1296,9 @@ class LibraryScreenModel(
                             it.int == id
                         }.takeUnless { it == -1 }?.toLong() ?: TrackStatus.OTHER.ordinal.toLong(),
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }
@@ -1304,6 +1324,9 @@ class LibraryScreenModel(
                         },
                         order = sources.indexOf(it.key).takeUnless { it == -1 }?.toLong() ?: Long.MAX_VALUE,
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }
@@ -1332,6 +1355,9 @@ class LibraryScreenModel(
                             else -> 7
                         },
                         flags = 0,
+                        // KMK -->
+                        hidden = false,
+                        // KMK <--
                     )
                 }
             }
@@ -1358,6 +1384,26 @@ class LibraryScreenModel(
         }
     }
     // SY <--
+
+    // KMK -->
+    /**
+     * Will get first merged manga in the list as target merging.
+     * If there is no merged manga, then it will use the first one in list to create a new target.
+     */
+    suspend fun smartSearchMerge(selectedMangas: PersistentList<LibraryManga>): Long? {
+        val mergedManga = selectedMangas.firstOrNull { it.manga.source == MERGED_SOURCE_ID }?.let { listOf(it) }
+            ?: emptyList()
+        val mergingMangas = selectedMangas.filterNot { it.manga.source == MERGED_SOURCE_ID }
+        val toMergeMangas = mergedManga + mergingMangas
+        if (toMergeMangas.size <= 1) return null
+
+        var mergingMangaId = toMergeMangas.first().manga.id
+        for (manga in toMergeMangas.drop(1)) {
+            mergingMangaId = smartSearchMerge.smartSearchMerge(manga.manga, mergingMangaId).id
+        }
+        return mergingMangaId
+    }
+    // KMK <--
 
     @Immutable
     private data class ItemPreferences(

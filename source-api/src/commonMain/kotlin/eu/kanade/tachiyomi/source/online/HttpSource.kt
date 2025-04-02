@@ -24,7 +24,6 @@ import okhttp3.Request
 import okhttp3.Response
 import rx.Observable
 import tachiyomi.core.common.util.lang.awaitSingle
-import tachiyomi.presentation.core.icons.FlagEmoji
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import java.net.URI
@@ -140,9 +139,7 @@ abstract class HttpSource : CatalogueSource {
     /**
      * Visible name of the source.
      */
-    override fun toString() = "$name (${
-        FlagEmoji.getEmojiLangFlag(lang)
-    })"
+    override fun toString() = "$name (${lang.uppercase()})"
 
     /**
      * Get a page with a list of manga.
@@ -391,13 +388,8 @@ abstract class HttpSource : CatalogueSource {
      *
      * @param manga the manga to update.
      * @return the chapters for the manga.
-     * @throws LicensedMangaChaptersException if a manga is licensed and therefore no chapters are available.
      */
     override suspend fun getChapterList(manga: SManga): List<SChapter> {
-        if (manga.status == SManga.LICENSED) {
-            throw LicensedMangaChaptersException()
-        }
-
         @Suppress("DEPRECATION")
         return fetchChapterList(manga).awaitSingle()
     }
@@ -410,15 +402,11 @@ abstract class HttpSource : CatalogueSource {
      */
     @Deprecated("Use the non-RxJava API instead", replaceWith = ReplaceWith("getChapterList(manga)"))
     open fun fetchChapterList(manga: SManga): Observable<List<SChapter>> {
-        return if (manga.status != SManga.LICENSED) {
-            client.newCall(chapterListRequest(manga))
-                .asObservableSuccess()
-                .map { response ->
-                    chapterListParse(response)
-                }
-        } else {
-            Observable.error(LicensedMangaChaptersException())
-        }
+        return client.newCall(chapterListRequest(manga))
+            .asObservableSuccess()
+            .map { response ->
+                chapterListParse(response)
+            }
     }
 
     /**
@@ -654,5 +642,3 @@ abstract class HttpSource : CatalogueSource {
     }
     // EXH <--
 }
-
-class LicensedMangaChaptersException : RuntimeException()

@@ -173,7 +173,12 @@ class ExtensionManager(
 
         enableAdditionalSubLanguages(extensions)
 
-        availableExtensionMapFlow.value = extensions.associateBy { "${it.pkgName}:${it.signatureHash}" }
+        availableExtensionMapFlow.value = extensions.associateBy {
+            it.pkgName +
+                // KMK -->
+                ":${it.signatureHash}"
+            // KMK <--
+        }
         updatedInstalledExtensionsStatuses(extensions)
         setupAvailableExtensionsSourcesDataMap(extensions)
     }
@@ -214,9 +219,6 @@ class ExtensionManager(
      * @param availableExtensions The list of extensions given by the [api].
      */
     private fun updatedInstalledExtensionsStatuses(availableExtensions: List<Extension.Available>) {
-        // KMK -->
-        val noExtAvailable = availableExtensions.isEmpty()
-        // KMK <--
         val installedExtensionsMap = installedExtensionMapFlow.value.toMutableMap()
         var changed = false
         for ((pkgName, extension) in installedExtensionsMap) {
@@ -227,28 +229,25 @@ class ExtensionManager(
                     it.pkgName == pkgName
             }
 
-            if (availableExt == null/* KMK --> && !extension.isObsolete // KMK <-- */) {
-                // Clear hasUpdate & set isObsolete
-                val isObsolete = !noExtAvailable && !extension.isObsolete
+            if (availableExt == null &&
+                (!extension.isObsolete || /* KMK --> */ extension.hasUpdate /* KMK <-- */)
+            ) {
+                // Ext not found: Set isObsolete & clear hasUpdate
                 installedExtensionsMap[pkgName] = extension.copy(
-                    isObsolete = isObsolete,
+                    isObsolete = true,
                     // KMK -->
                     hasUpdate = false,
-                    repoUrl = null,
-                    repoName = extension.repoName,
                     // KMK <--
                 )
-                // KMK -->
-                // KMK: changed = true
-                changed = changed || isObsolete || noExtAvailable && (extension.isObsolete || extension.hasUpdate)
-                // KMK <--
+                changed = true
                 // SY -->
             } else if (extension.isBlacklisted() && !extension.isRedundant) {
                 installedExtensionsMap[pkgName] = extension.copy(isRedundant = true)
                 changed = true
                 // SY <--
-            } else /* KMK --> if (availableExt != null) // KMK <-- */ {
-                // Update installed extensions with new information from repo
+            } else if (availableExt != null) {
+                // Ext found: Update installed extensions with new information from repo
+                // Also clear isObsolete and set new repo Name if needed
                 val hasUpdate = extension.updateExists(availableExt)
                 installedExtensionsMap[pkgName] = extension.copy(
                     hasUpdate = hasUpdate,
@@ -286,7 +285,12 @@ class ExtensionManager(
      * @param extension The extension to be updated.
      */
     fun updateExtension(extension: Extension.Installed): Flow<InstallStep> {
-        val availableExt = availableExtensionMapFlow.value[extension.pkgName] ?: return emptyFlow()
+        val availableExt = availableExtensionMapFlow.value[
+            extension.pkgName +
+                // KMK -->
+                ":${extension.signatureHash}",
+            // KMK <--
+        ] ?: return emptyFlow()
         return installExtension(availableExt)
     }
 

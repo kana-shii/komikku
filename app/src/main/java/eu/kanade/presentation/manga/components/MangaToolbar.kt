@@ -59,7 +59,7 @@ fun MangaToolbar(
     // SY -->
     onClickEditInfo: (() -> Unit)?,
     // KMK -->
-    onClickRelatedTitles: (() -> Unit)?,
+    onClickRelatedMangas: (() -> Unit)?,
     // KMK <--
     onClickRecommend: (() -> Unit)?,
     onClickMerge: (() -> Unit)?,
@@ -82,7 +82,7 @@ fun MangaToolbar(
     fun onHomeClicked() = navigator?.popUntil { screen ->
         screen is SourceFeedScreen || screen is BrowseSourceScreen
     }
-    val isHomeEnabled = Injekt.get<UiPreferences>().showHomeOnRelatedTitles().get()
+    val isHomeEnabled = Injekt.get<UiPreferences>().showHomeOnRelatedMangas().get()
     // KMK <--
     Column(
         modifier = modifier,
@@ -212,11 +212,11 @@ fun MangaToolbar(
                                     )
                                 }
                                 // KMK -->
-                                if (onClickRelatedTitles != null) {
+                                if (onClickRelatedMangas != null) {
                                     add(
                                         AppBar.OverflowAction(
                                             title = stringResource(KMR.strings.pref_source_related_mangas),
-                                            onClick = onClickRelatedTitles,
+                                            onClick = onClickRelatedMangas,
                                         ),
                                     )
                                 }
@@ -247,18 +247,6 @@ fun MangaToolbar(
                                         ),
                                     )
                                 }
-//                                add(
-//                                    AppBar.OverflowAction(
-//                                        title = stringResource(MR.strings.pref_invalidate_download_cache),
-//                                        onClick = { },
-//                                    ),
-//                                )
-//                                add(
-//                                    AppBar.OverflowAction(
-//                                        title = stringResource(MR.strings.pref_clean_invalid_downloads),
-//                                        onClick = { },
-//                                    ),
-//                                )
                                 // KMK <--
                             }
                             .build(),

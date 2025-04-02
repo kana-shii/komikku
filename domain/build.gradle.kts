@@ -25,8 +25,10 @@ dependencies {
 
     api(libs.sqldelight.android.paging)
 
+    compileOnly(libs.compose.stablemarker)
+
     // SY -->
-    implementation(libs.injekt.core)
+    implementation(libs.injekt)
     // SY <--
 
     testImplementation(libs.bundles.test)

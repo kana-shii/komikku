@@ -1,5 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
 <changelog bulletedList="true">
+    <changelogversion versionName="r9378" changeDate="September 18, 2024">
+        <changelogtext>[b]New:[/b] ui: show number of entries on upcoming screen</changelogtext>
+        <changelogtext>[b]New:[/b] feat(ui): saved search tabs for browse source</changelogtext>
+        <changelogtext>[b]New:[/b] feat: feed reorder screen &amp; support sources' saved-searches</changelogtext>
+        <changelogtext>[b]New:[/b] feat: Hidden categories</changelogtext>
+        <changelogtext>[b]New:[/b] disable smart-update for individual &amp; fix custom interval</changelogtext>
+        <changelogtext>[b]New:[/b] Option to update trackers when chapter marked as read</changelogtext>
+        <changelogtext>[b]Improve:[/b] e-hentai language flag</changelogtext>
+        <changelogtext>[b]Improve:[/b] Support skip-downloading-duplicate-read-chapters for merged entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show local chapters as downloaded on merged entries</changelogtext>
+        <changelogtext>[b]Improve:[/b] Re-enable fetching chapters list for entries with licensed status</changelogtext>
+        <changelogtext>[b]Improve:[/b] Move "Choose what to sync" out of "Sync now"</changelogtext>
+        <changelogtext>[b]Improve:[/b] Respect `thumbnailQuality` and `tryUsingFirstVolumeCover` preferences</changelogtext>
+        <changelogtext>[b]Improve:[/b] Reduce ChapterNavigator horizontal padding on small ui</changelogtext>
+        <changelogtext>[b]Improve:[/b] hide display mode for e-hentai</changelogtext>
+        <changelogtext>[b]Improve:[/b] Ignore "intent://" urls on webview</changelogtext>
+        <changelogtext>[b]Improve:[/b] Remove legacy broken source and history backup</changelogtext>
+        <changelogtext>[b]Fix:[/b] Kitsu `ratingTwenty` being typed as String</changelogtext>
+        <changelogtext>[b]Fix:[/b] Kitsu `synopsis` nullability</changelogtext>
+        <changelogtext>[b]Fix:[/b] wrong feed adding when filter search</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9318" changeDate="August 31, 2024">
+        <changelogtext>[b]Hot Fix:[/b] fix extension won't update</changelogtext>
+        <changelogtext>[b]Hot Fix:[/b] ext obsolete status</changelogtext>
+        <changelogtext>[b]New:[/b] Add source search, icon &amp; flag on Feed adding dialog</changelogtext>
+    </changelogversion>
+    <changelogversion versionName="r9312" changeDate="August 29, 2024">
+        <changelogtext>[b]New:[/b] Showing source icon in library</changelogtext>
+        <changelogtext>[b]New:[/b] Use language flags</changelogtext>
+        <changelogtext>[b]New:[/b] Bulk-merging multiple library entries</changelogtext>
+        <changelogtext>[b]New:[/b] Ability to enable/disable repo</changelogtext>
+        <changelogtext>[b]New:[/b] Show repo icon for Komikku &amp; Keiyoushi</changelogtext>
+        <changelogtext>[b]New:[/b] Custom themes</changelogtext>
+        <changelogtext>[b]New:[/b] Allow sync Feeds &amp; extension-repo settings</changelogtext>
+        <changelogtext>[b]New:[/b] Add 'show entry' action to download notifications</changelogtext>
+        <changelogtext>[b]New:[/b] Add option to skip downloading duplicate read chapters</changelogtext>
+        <changelogtext>[b]New:[/b] Delete duplicate downloaded chapters when they are automatically marked as read</changelogtext>
+        <changelogtext>[b]New:[/b] Remove the 'UNOFFICIAL' status, remove built-in Komikku repo, instead allow adding it as default</changelogtext>
+        <changelogtext>[b]Improve:[/b] Show same extension from multiple repos &amp; show their repo's name</changelogtext>
+        <changelogtext>[b]Improve:[/b] Rename Related Titles to Suggestions</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add more auto backup hours</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add option to update library each 6 hours</changelogtext>
+        <changelogtext>[b]Improve:[/b] Back-button on pre-migration source</changelogtext>
+        <changelogtext>[b]Improve:[/b] Don't expand description on the manga while merging</changelogtext>
+        <changelogtext>[b]Improve:[/b] Hide keyboard when a Tracker SearchResultItem is clicked</changelogtext>
+        <changelogtext>[b]Improve:[/b] Move dropdown menu to correct position</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add extensions list refresh menu</changelogtext>
+        <changelogtext>[b]Improve:[/b] Add confirmation when adding repo via URI</changelogtext>
+        <changelogtext>[b]Improve:[/b] Respect privacy settings in extension update notification</changelogtext>
+        <changelogtext>[b]Improve:[/b] Option to not backup Saved searches &amp; Feeds</changelogtext>
+        <changelogtext>[b]Improve:[/b] Change Reader's open-in-browser icon to Explore</changelogtext>
+        <changelogtext>[b]Fix:[/b] Smart library updates now will honor the 'Skip Completed' option</changelogtext>
+        <changelogtext>[b]Fix:[/b] Setting to hide home button while browsing Suggestions</changelogtext>
+    </changelogversion>
     <changelogversion versionName="r9234" changeDate="August 13, 2024">
         <changelogtext>[b]New:[/b] Add option to only show entries with new chapters</changelogtext>
         <changelogtext>[b]New:[/b] add source search to pre-migration screen</changelogtext>
@@ -8,7 +62,7 @@
         <changelogtext>[b]New:[/b] Add an "open in browser" button to reader menu</changelogtext>
         <changelogtext>[b]New:[/b] Add Backup and Restore of Extension Repos</changelogtext>
         <changelogtext>[b]Improve:[/b] allow canceling search for a migrating manga without remove it</changelogtext>
-        <changelogtext>[b]Improve:[/b] put Related titles in overflow</changelogtext>
+        <changelogtext>[b]Improve:[/b] put Suggestions in overflow</changelogtext>
         <changelogtext>[b]Fix:[/b] Update Kitsu's domain to kitsu.app</changelogtext>
         <changelogtext>[b]Fix:[/b] settings to show/hide progress-banner were not working</changelogtext>
         <changelogtext>[b]Fix:[/b] Fix MAL search results not showing start dates</changelogtext>
@@ -70,7 +124,7 @@
         <changelogtext>[b]Fix:[/b] Update image-decoder revision</changelogtext>
     </changelogversion>
     <changelogversion versionName="r9075-r9078" changeDate="July 02, 2024">
-        <changelogtext>[b]Fix:[/b] crashing issues with Related titles row</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashing issues with Suggestions row</changelogtext>
         <changelogtext>[b]Fix:[/b] GDrive error message</changelogtext>
         <changelogtext>[b]New:[/b] More themes</changelogtext>
         <changelogtext>[b]Improve:[/b] Reader color</changelogtext>
@@ -87,7 +141,7 @@
         <changelogtext>[b]Improve:[/b] Metadata view</changelogtext>
         <changelogtext>[b]Improve:[/b] Scrollbar for related mangas screen</changelogtext>
         <changelogtext>[b]Improve:[/b] other UI improvements</changelogtext>
-        <changelogtext>[b]Fix:[/b] crashing issues with Related titles screens</changelogtext>
+        <changelogtext>[b]Fix:[/b] crashing issues with Suggestions screens</changelogtext>
         <changelogtext>[b]Fix:[/b] unexpected skips in strong skipping mode</changelogtext>
         <changelogtext>Translations update from Hosted Weblate</changelogtext>
         <changelogtext>Add log &amp; improve key generation to better debug crashing issues</changelogtext>
@@ -111,13 +165,13 @@
         <changelogtext>[b]New[/b] Support only Android 8+</changelogtext>
         <changelogtext>[b]New[/b] Add NSFW filter &amp; source search into Merge screen</changelogtext>
         <changelogtext>[b]Improve[/b] Theme cover based performance</changelogtext>
-        <changelogtext>[b]Improve[/b] Option to not show Related titles by default but using a button to open that screen</changelogtext>
+        <changelogtext>[b]Improve[/b] Option to not show Suggestions by default but using a button to open that screen</changelogtext>
         <changelogtext>[b]Fix[/b] laggy with scroll</changelogtext>
         <changelogtext>[b]Fix[/b] chapter's date wrong color randomly</changelogtext>
         <changelogtext>[b]Fix[/b] Bangumi tracker for Komikku, thanks @jimlee0824</changelogtext>
         <changelogtext>[b]Fix[/b] chapter number parsing when number is after unwanted tag</changelogtext>
         <changelogtext>[b]Fix[/b] sources' NSFW filter was being reverted</changelogtext>
-        <changelogtext>[b]Improve[/b] Hide Related titles completely if not found any</changelogtext>
+        <changelogtext>[b]Improve[/b] Hide Suggestions completely if not found any</changelogtext>
         <changelogtext>[b]Improve[/b] Translation for Komikku's string</changelogtext>
         <changelogtext>[b]Improve[/b] Default to put ShowRecommendation in overflow menu</changelogtext>
         <changelogtext>[b]Improve[/b] Check category order before restoring from backup</changelogtext>
@@ -128,7 +182,7 @@
         <changelogtext>[b]New[/b] Library &amp; Browse cover's styling: color tint &amp; loading animation</changelogtext>
         <changelogtext>[b]New[/b] Add Namicomi support for external chapters on MD</changelogtext>
         <changelogtext>[b]Improved[/b] Warning to private installer</changelogtext>
-        <changelogtext>[b]Fix[/b] Genre tag search while browsing related-titles or from Feed Screen</changelogtext>
+        <changelogtext>[b]Fix[/b] Genre tag search while browsing Suggestions or from Feed Screen</changelogtext>
         <changelogtext>[b]Fix[/b] storage permission request for non-conforming devices</changelogtext>
     </changelogversion>
     <changelogversion versionName="r8931" changeDate="May 30, 2024">

@@ -11,7 +11,7 @@ kotlin {
         val commonMain by getting {
             dependencies {
                 api(kotlinx.serialization.json)
-                api(libs.injekt.core)
+                api(libs.injekt)
                 api(libs.rxjava)
                 api(libs.jsoup)
 
@@ -44,10 +44,6 @@ android {
     defaultConfig {
         consumerProguardFile("consumer-proguard.pro")
     }
-}
-
-dependencies {
-    implementation(project(":presentation-core"))
 }
 
 tasks {

@@ -62,6 +62,7 @@ import eu.kanade.tachiyomi.ui.manga.MangaScreen
 import eu.kanade.tachiyomi.ui.webview.WebViewScreen
 import eu.kanade.tachiyomi.util.system.toast
 import exh.md.follows.MangaDexFollowsScreen
+import exh.source.isEhBasedSource
 import exh.ui.ifSourcesLoaded
 import exh.ui.smartsearch.SmartSearchScreen
 import kotlinx.coroutines.channels.Channel
@@ -193,7 +194,12 @@ data class BrowseSourceScreen(
                             searchQuery = state.toolbarQuery,
                             onSearchQueryChange = screenModel::setToolbarQuery,
                             source = screenModel.source,
-                            displayMode = screenModel.displayMode,
+                            displayMode = screenModel.displayMode
+                                // KMK -->
+                                .takeIf {
+                                    !screenModel.source.isEhBasedSource() || !screenModel.ehentaiBrowseDisplayMode
+                                },
+                            // KMK <--
                             onDisplayModeChange = { screenModel.displayMode = it },
                             navigateUp = navigateUp,
                             onWebViewClick = onWebViewClick,
@@ -252,7 +258,10 @@ data class BrowseSourceScreen(
                         }
                         if (/* SY --> */ state.filterable /* SY <-- */) {
                             FilterChip(
-                                selected = state.listing is Listing.Search,
+                                selected = state.listing is Listing.Search &&
+                                    // KMK -->
+                                    (state.listing as Listing.Search).savedSearchId == null,
+                                // KMK <--
                                 onClick = screenModel::openFilterSheet,
                                 leadingIcon = {
                                     Icon(
@@ -275,6 +284,24 @@ data class BrowseSourceScreen(
                                 },
                             )
                         }
+                        // KMK -->
+                        state.savedSearches.forEach { savedSearch ->
+                            FilterChip(
+                                selected = state.listing is Listing.Search &&
+                                    (state.listing as Listing.Search).savedSearchId == savedSearch.id,
+                                onClick = {
+                                    screenModel.onSavedSearch(savedSearch) {
+                                        context.toast(it)
+                                    }
+                                },
+                                label = {
+                                    Text(
+                                        text = savedSearch.name,
+                                    )
+                                },
+                            )
+                        }
+                        // KMK <--
                     }
 
                     HorizontalDivider()
@@ -303,7 +330,17 @@ data class BrowseSourceScreen(
                         bulkFavoriteScreenModel.toggleSelection(it)
                     } else {
                         // KMK <--
-                        navigator.push(MangaScreen(it.id, true, smartSearchConfig))
+                        navigator.push(
+                            MangaScreen(
+                                it.id,
+                                // KMK -->
+                                // Finding the entry to be merged to, so we don't want to expand description
+                                // so that user can see the `Merge to another` button
+                                smartSearchConfig != null,
+                                // KMK <--
+                                smartSearchConfig,
+                            ),
+                        )
                     }
                 },
                 onMangaLongClick = { manga ->
