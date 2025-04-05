@@ -164,6 +164,7 @@ class BrowseRecommendsScreen(
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
+                browseSourceState = state,
                 // KMK <--
             )
         }

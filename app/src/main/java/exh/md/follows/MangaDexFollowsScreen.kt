@@ -153,6 +153,7 @@ class MangaDexFollowsScreen(private val sourceId: Long) : Screen() {
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
+                browseSourceState = state,
                 // KMK <--
             )
         }

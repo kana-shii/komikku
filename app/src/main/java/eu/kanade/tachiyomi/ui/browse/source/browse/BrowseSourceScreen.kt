@@ -393,6 +393,7 @@ data class BrowseSourceScreen(
                 },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
+                browseSourceState = state,
                 // KMK <--
             )
         }

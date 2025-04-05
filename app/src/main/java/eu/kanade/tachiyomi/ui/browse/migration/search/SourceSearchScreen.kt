@@ -177,6 +177,7 @@ data class SourceSearchScreen(
                 onMangaLongClick = { navigator.push(MangaScreen(it.id, true)) },
                 // KMK -->
                 selection = bulkFavoriteState.selection,
+                browseSourceState = state,
                 // KMK <--
             )
         }
