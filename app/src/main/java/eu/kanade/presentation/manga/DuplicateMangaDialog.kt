@@ -76,7 +76,6 @@ import tachiyomi.i18n.kmk.KMR
 import tachiyomi.presentation.core.components.Badge
 import tachiyomi.presentation.core.components.BadgeGroup
 import tachiyomi.presentation.core.components.material.padding
-import tachiyomi.presentation.core.i18n.pluralStringResource
 import tachiyomi.presentation.core.i18n.stringResource
 import tachiyomi.presentation.core.util.collectAsState
 import tachiyomi.presentation.core.util.secondaryItemAlpha
@@ -345,11 +344,7 @@ private fun DuplicateMangaListItem(
                 Badge(
                     color = MaterialTheme.colorScheme.secondary,
                     textColor = MaterialTheme.colorScheme.onSecondary,
-                    text = pluralStringResource(
-                        MR.plurals.manga_num_chapters,
-                        duplicate.chapterCount.toInt(),
-                        duplicate.chapterCount,
-                    ),
+                    text = duplicate.chapterCount.toInt().toString(),
                 )
             }
         }
@@ -404,7 +399,7 @@ private fun DuplicateMangaListItem(
         Spacer(modifier = Modifier.weight(1f))
 
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().padding(top = MaterialTheme.padding.small),
             horizontalArrangement = Arrangement.Center,
         ) {
             if (source is StubSource) {
@@ -522,7 +517,7 @@ private fun calculateMangaCardHeight(
     val sourceHeight = textMeasurer.measureHeight("", typography.labelSmall, 1, constraints)
 
     val totalHeight = coverHeight + titleHeight + authorHeight + artistHeight + statusHeight + sourceHeight
-    return with(density) { ((2 * smallPadding) + totalHeight + (5 * extraSmallPadding)).toDp() }
+    return with(density) { ((3 * smallPadding) + totalHeight + (5 * extraSmallPadding)).toDp() }
 }
 
 private fun TextMeasurer.measureHeight(
