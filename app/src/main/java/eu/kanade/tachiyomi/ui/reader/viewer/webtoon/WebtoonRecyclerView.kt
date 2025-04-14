@@ -41,8 +41,11 @@ class WebtoonRecyclerView @JvmOverloads constructor(
                 zoom(currentScale, DEFAULT_RATE, x, 0f, y, 0f)
             }
         }
+    var zoomInDisabled = false
     private val minRate
         get() = if (zoomOutDisabled) DEFAULT_RATE else MIN_RATE
+    private val maxRate
+        get() = if (zoomInDisabled) DEFAULT_RATE else MAX_SCALE_RATE
 
     private val listener = GestureListener()
     private val detector = Detector()
@@ -174,10 +177,21 @@ class WebtoonRecyclerView @JvmOverloads constructor(
     }
 
     fun onScale(scaleFactor: Float) {
-        currentScale *= scaleFactor
-        currentScale = currentScale.coerceIn(
+        val newScale = currentScale * scaleFactor
+
+        // Prevent zooming out if disabled
+        if (zoomOutDisabled && newScale < currentScale) {
+            return
+        }
+
+        // Prevent zooming in if disabled
+        if (zoomInDisabled && newScale > currentScale) {
+            return
+        }
+
+        currentScale = newScale.coerceIn(
             minRate,
-            MAX_SCALE_RATE,
+            maxRate,
         )
 
         setScaleRate(currentScale)
