@@ -202,6 +202,20 @@ class ReaderActivity : BaseActivity() {
     var isScrollingThroughPages = false
         private set
 
+    private var isZoomDisabled = false
+
+    private fun toggleZoom() {
+        isZoomDisabled = !isZoomDisabled
+        // Update the viewer's zoom functionality based on the new state
+        viewModel.state.value.viewer?.let { viewer ->
+            if (viewer is PagerViewer) {
+                viewer.config.isZoomEnabled = !isZoomDisabled
+            }
+        }
+        config?.isZoomEnabled = !isZoomDisabled
+        invalidateOptionsMenu() // Refresh the UI to reflect the change
+    }
+
     /**
      * Called when the activity is created. Initializes the presenter and configuration.
      */
@@ -579,6 +593,8 @@ class ReaderActivity : BaseActivity() {
                     }
                 },
                 onClickShiftPage = ::shiftDoublePages,
+                onClickDisableZoom = ::toggleZoom,
+                isZoomDisabled = isZoomDisabled,
                 // SY <--
             )
 
@@ -1325,6 +1341,8 @@ class ReaderActivity : BaseActivity() {
      * Class that handles the user preferences of the reader.
      */
     private inner class ReaderConfig {
+
+        var isZoomEnabled: Boolean = true
 
         private fun getCombinedPaint(grayscale: Boolean, invertedColors: Boolean): Paint {
             return Paint().apply {

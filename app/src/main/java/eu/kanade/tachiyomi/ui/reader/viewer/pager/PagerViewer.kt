@@ -1,7 +1,6 @@
 package eu.kanade.tachiyomi.ui.reader.viewer.pager
 
 import android.graphics.PointF
-import android.view.InputDevice
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -473,19 +472,9 @@ abstract class PagerViewer(
      * return true if the event was handled, false otherwise.
      */
     override fun handleGenericMotionEvent(event: MotionEvent): Boolean {
-        if (event.source and InputDevice.SOURCE_CLASS_POINTER != 0) {
-            when (event.action) {
-                MotionEvent.ACTION_SCROLL -> {
-                    if (event.getAxisValue(MotionEvent.AXIS_VSCROLL) < 0.0f) {
-                        moveDown()
-                    } else {
-                        moveUp()
-                    }
-                    return true
-                }
-            }
+        if (!config.isZoomEnabled) {
+            return false // Ignore zoom-related events if zoom is disabled
         }
-        return false
     }
 
     fun onPageSplit(currentPage: ReaderPage, newPage: InsertPage) {
