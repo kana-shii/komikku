@@ -14,11 +14,11 @@ import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.structuralEqualityPolicy
-import eu.kanade.domain.connections.service.ConnectionsPreferences
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
+import eu.kanade.domain.connections.service.ConnectionsPreferences
 import eu.kanade.presentation.more.settings.widget.ConnectionsPreferenceWidget
+import eu.kanade.presentation.more.settings.widget.EditTextPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.InfoWidget
 import eu.kanade.presentation.more.settings.widget.ListPreferenceWidget
 import eu.kanade.presentation.more.settings.widget.MultiSelectListPreferenceWidget

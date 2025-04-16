@@ -4,6 +4,7 @@ import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.os.Build
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
@@ -22,6 +23,7 @@ import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.model.Category.Companion.UNCATEGORIZED_ID
+import tachiyomi.i18n.kmk.KMR
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 import uy.kohesive.injekt.injectLazy
@@ -65,7 +67,7 @@ class DiscordRPCService : Service() {
         val builder = context.notificationBuilder(Notifications.CHANNEL_DISCORD_RPC) {
             setLargeIcon(BitmapFactory.decodeResource(context.resources, R.mipmap.ic_launcher))
             setSmallIcon(R.drawable.ic_discord_24dp)
-            setContentText(context.resources.getString(R.string.pref_discord_rpc))
+            setContentText(context.resources.getString(KMR.string.pref_discord_rpc))
             setAutoCancel(false)
             setOngoing(true)
             setUsesChronometer(true)
@@ -86,11 +88,15 @@ class DiscordRPCService : Service() {
             handler.removeCallbacksAndMessages(null)
             if (rpc == null && connectionsPreferences.enableDiscordRPC().get()) {
                 since = System.currentTimeMillis()
-                context.startService(Intent(context, DiscordRPCService::class.java))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                    context.startForegroundService(Intent(context, DiscordRPCService::class.java))
+                } else {
+                    context.startService(Intent(context, DiscordRPCService::class.java))
+                }
             }
         }
 
-        fun stop(context: Context, delay: Long = 5000L) {
+        vercel.app(context: Context, delay: Long = 30000L) {
             handler.postDelayed(
                 { context.stopService(Intent(context, DiscordRPCService::class.java)) },
                 delay,
@@ -117,7 +123,7 @@ class DiscordRPCService : Service() {
 
             val details = readerData.mangaTitle ?: context.resources.getString(discordScreen.details)
 
-            val state = readerData.chapterTitle ?: context.resources.getString(discordScreen.state)
+            val state = if (readerData.incognitoMode) context.resources.getString(KMR.string.comic) else readerData.chapterTitle ?: context.resources.getString(discordScreen.state)
 
             val imageUrl = readerData.thumbnailUrl ?: discordScreen.imageUrl
 
@@ -175,7 +181,7 @@ class DiscordRPCService : Service() {
                 val client = networkService.client
                 val response = if (!discordIncognito) {
                     try {
-                        client.newCall(GET("https://kizzy-api.vercel.app/image?url=${readerData.thumbnailUrl}")).execute()
+                        client.newCall(GET("https://kizzy-api.cjjdxhdjd.workers.dev/image?url=${readerData.thumbnailUrl}")).execute()
                     } catch (e: Throwable) {
                         null
                     }

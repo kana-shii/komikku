@@ -18,6 +18,7 @@ import android.graphics.Paint
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.KeyEvent
 import android.view.MotionEvent
 import android.view.View
@@ -56,6 +57,7 @@ import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewModelScope
 import com.davemorrissey.labs.subscaleview.SubsamplingScaleImageView
 import com.google.android.material.elevation.SurfaceColors
 import com.google.android.material.transition.platform.MaterialContainerTransform
@@ -65,12 +67,8 @@ import com.materialkolor.dynamicColorScheme
 import dev.chrisbanes.insetter.applyInsetter
 import eu.kanade.core.util.ifSourcesLoaded
 import eu.kanade.domain.base.BasePreferences
-import eu.kanade.domain.manga.model.readingMode
-import android.util.Log
-import androidx.lifecycle.viewModelScope
 import eu.kanade.domain.connections.service.ConnectionsPreferences
-import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
-import eu.kanade.tachiyomi.data.connections.discord.ReaderData
+import eu.kanade.domain.manga.model.readingMode
 import eu.kanade.domain.ui.UiPreferences
 import eu.kanade.presentation.reader.ChapterListDialog
 import eu.kanade.presentation.reader.DisplayRefreshHost
@@ -85,6 +83,8 @@ import eu.kanade.presentation.reader.settings.ReaderSettingsDialog
 import eu.kanade.presentation.theme.TachiyomiTheme
 import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.coil.TachiyomiImageDecoder
+import eu.kanade.tachiyomi.data.connections.discord.DiscordRPCService
+import eu.kanade.tachiyomi.data.connections.discord.ReaderData
 import eu.kanade.tachiyomi.data.notification.NotificationReceiver
 import eu.kanade.tachiyomi.data.notification.Notifications
 import eu.kanade.tachiyomi.databinding.ReaderActivityBinding
@@ -170,7 +170,6 @@ class ReaderActivity : BaseActivity() {
         }
         private val connectionsPreferences: ConnectionsPreferences = Injekt.get()
     }
-
 
     private val readerPreferences = Injekt.get<ReaderPreferences>()
     private val preferences = Injekt.get<BasePreferences>()
@@ -1549,13 +1548,16 @@ class ReaderActivity : BaseActivity() {
                     DiscordRPCService.setReaderActivity(
                         context = this@ReaderActivity,
                         ReaderData(
-                            incognitoMode = viewModel.incognitoMode,    // viewModel.currentSource.isNsfw()
+                            incognitoMode = viewModel.incognitoMode, // viewModel.currentSource.isNsfw()
                             mangaId = viewModel.manga?.id,
                             mangaTitle = viewModel.manga?.title,
                             thumbnailUrl = viewModel.manga?.thumbnailUrl,
                             chapterNumber = Pair(currentChapter?.chapter_number ?: -1f, viewModel.getChapters().size),
-                            chapterTitle = if(connectionsPreferences.useChapterTitles().get()) currentChapter?.name
-                            else currentChapter?.chapter_number.toString(),
+                            chapterTitle = if (connectionsPreferences.useChapterTitles().get()) {
+                                currentChapter?.name
+                            } else {
+                                currentChapter?.chapter_number.toString()
+                            },
                         ),
                     )
                 } else {

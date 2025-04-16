@@ -181,7 +181,7 @@ object Notifications {
                 },
                 buildNotificationChannel(CHANNEL_APP_UPDATE, IMPORTANCE_HIGH) {
                     setGroup(GROUP_APK_UPDATES)
-                    setName(context.stringResource(KMR.strings.channel_app_updates))
+                    setName(context.stringResource(MR.strings.channel_app_updates))
                 },
                 buildNotificationChannel(CHANNEL_EXTENSIONS_UPDATE, IMPORTANCE_DEFAULT) {
                     setGroup(GROUP_APK_UPDATES)
