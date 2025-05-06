@@ -23,7 +23,6 @@ import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import eu.kanade.presentation.components.AppBar
-import eu.kanade.presentation.components.AppBarActions
 import eu.kanade.presentation.util.Screen
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
@@ -54,7 +53,6 @@ class ManageDuplicatesScreen : Screen() {
                     title = stringResource(MR.strings.label_manage_duplicates),
                     navigateUp = navigator::pop,
                     scrollBehavior = scrollBehavior,
-                    actions = { AppBarActions(tabs[state.currentPage].actions) },
                 )
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) },

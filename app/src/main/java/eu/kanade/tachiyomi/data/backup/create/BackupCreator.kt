@@ -8,7 +8,6 @@ import eu.kanade.tachiyomi.data.backup.BackupFileValidator
 import eu.kanade.tachiyomi.data.backup.create.creators.CategoriesBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.ExtensionRepoBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.FeedBackupCreator
-import eu.kanade.tachiyomi.data.backup.create.creators.HiddenDuplicatesBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.MangaBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.PreferenceBackupCreator
 import eu.kanade.tachiyomi.data.backup.create.creators.SavedSearchBackupCreator
@@ -17,7 +16,6 @@ import eu.kanade.tachiyomi.data.backup.models.Backup
 import eu.kanade.tachiyomi.data.backup.models.BackupCategory
 import eu.kanade.tachiyomi.data.backup.models.BackupExtensionRepos
 import eu.kanade.tachiyomi.data.backup.models.BackupFeed
-import eu.kanade.tachiyomi.data.backup.models.BackupHiddenDuplicate
 import eu.kanade.tachiyomi.data.backup.models.BackupManga
 import eu.kanade.tachiyomi.data.backup.models.BackupPreference
 import eu.kanade.tachiyomi.data.backup.models.BackupSavedSearch
@@ -55,7 +53,6 @@ class BackupCreator(
 
     private val categoriesBackupCreator: CategoriesBackupCreator = CategoriesBackupCreator(),
     private val mangaBackupCreator: MangaBackupCreator = MangaBackupCreator(),
-    private val hiddenDuplicatesBackupCreator: HiddenDuplicatesBackupCreator = HiddenDuplicatesBackupCreator(),
     private val preferenceBackupCreator: PreferenceBackupCreator = PreferenceBackupCreator(),
     private val extensionRepoBackupCreator: ExtensionRepoBackupCreator = ExtensionRepoBackupCreator(),
     private val sourcesBackupCreator: SourcesBackupCreator = SourcesBackupCreator(),
@@ -106,7 +103,7 @@ class BackupCreator(
                 backupPreferences = backupAppPreferences(options),
                 backupExtensionRepo = backupExtensionRepos(options),
                 backupSourcePreferences = backupSourcePreferences(options),
-                backupHiddenDuplicates = backupHiddenDuplicates(options),
+
                 // SY -->
                 backupSavedSearches = backupSavedSearches(options),
                 // SY <--
@@ -166,12 +163,6 @@ class BackupCreator(
         if (!options.appSettings) return emptyList()
 
         return preferenceBackupCreator.createApp(includePrivatePreferences = options.privateSettings)
-    }
-
-    private suspend fun backupHiddenDuplicates(options: BackupOptions): List<BackupHiddenDuplicate> {
-        if (!options.hiddenDuplicates) return emptyList()
-
-        return hiddenDuplicatesBackupCreator()
     }
 
     suspend fun backupExtensionRepos(options: BackupOptions): List<BackupExtensionRepos> {

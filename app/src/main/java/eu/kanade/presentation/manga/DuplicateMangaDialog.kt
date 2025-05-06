@@ -1,4 +1,4 @@
-package eu.kanade.presentation.duplicates
+package eu.kanade.presentation.manga
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,7 +28,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.unit.dp
 import eu.kanade.presentation.components.AdaptiveSheet
 import eu.kanade.presentation.components.TabbedDialogPaddings
 import eu.kanade.presentation.duplicates.components.DuplicateMangaListItem
@@ -98,7 +97,7 @@ fun DuplicateMangaDialog(
 
             LazyRow(
                 horizontalArrangement = /* KMK --> */ Arrangement.SpaceAround, /* KMK <-- */
-                modifier = Modifier.height(getMaximumMangaCardHeight(duplicates, duplicateMangaDialogCardWidth))
+                modifier = Modifier.height(getMaximumMangaCardHeight(duplicates))
                     // KMK -->
                     .fillMaxWidth(),
                 // KMK <--
@@ -113,7 +112,6 @@ fun DuplicateMangaDialog(
                     DuplicateMangaListItem(
                         duplicate = it,
                         getSource = { sourceManager.getOrStub(it.manga.source) },
-                        cardWidth = duplicateMangaDialogCardWidth,
                         onClick = { onMigrate(it.manga) },
                         onDismissRequest = onDismissRequest,
                         onLongClick = { onOpenManga(it.manga) },
@@ -240,5 +238,3 @@ fun DuplicateMangaDialog(
         }
     }
 }
-
-private val duplicateMangaDialogCardWidth = 150.dp
