@@ -52,6 +52,8 @@ fun BottomReaderBar(
     onClickShare: (() -> Unit)?,
     onClickPageLayout: () -> Unit,
     onClickShiftPage: () -> Unit,
+    onClickDisableZoom: () -> Unit,
+    isZoomDisabled: Boolean,
     // SY <--
 ) {
     // KMK -->
@@ -178,6 +180,20 @@ fun BottomReaderBar(
                 Icon(
                     painter = painterResource(R.drawable.ic_page_next_outline_24dp),
                     contentDescription = stringResource(SYMR.strings.shift_double_pages),
+                    // KMK -->
+                    tint = iconColor,
+                    // KMK <--
+                )
+            }
+        }
+
+        if (ReaderBottomButton.DisableZoom.isIn(enabledButtons)) {
+            IconButton(onClick = onClickDisableZoom) {
+                Icon(
+                    painter = painterResource(
+                        if (isZoomDisabled) R.drawable.baseline_zoom_in_map_24 else R.drawable.baseline_zoom_out_map_24,
+                    ),
+                    contentDescription = stringResource(SYMR.strings.pref_disable_zoom),
                     // KMK -->
                     tint = iconColor,
                     // KMK <--
