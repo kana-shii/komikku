@@ -40,8 +40,8 @@ import eu.kanade.tachiyomi.ui.browse.migration.sources.MigrateSourceScreenModel
 import eu.kanade.tachiyomi.util.system.copyToClipboard
 import exh.source.EHENTAI_EXT_SOURCES
 import exh.source.EXHENTAI_EXT_SOURCES
+import exh.source.ExhPreferences
 import kotlinx.collections.immutable.ImmutableList
-import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.domain.source.model.Source
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.kmk.KMR
@@ -119,7 +119,7 @@ private fun MigrateSourceList(
     // KMK -->
     val lazyListState = rememberLazyListState()
     var filterObsoleteSource by rememberSaveable { mutableStateOf(false) }
-    val isHentaiEnabled = remember { Injekt.get<UnsortedPreferences>().isHentaiEnabled().get() }
+    val isHentaiEnabled = remember { Injekt.get<ExhPreferences>().isHentaiEnabled().get() }
 
     BackHandler(enabled = !state.searchQuery.isNullOrBlank()) {
         onChangeSearchQuery("")

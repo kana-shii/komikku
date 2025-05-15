@@ -19,8 +19,6 @@ import tachiyomi.core.common.util.lang.withIOContext
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.sy.SYMR
-import uy.kohesive.injekt.Injekt
-import uy.kohesive.injekt.api.get
 import tachiyomi.domain.track.model.Track as DomainTrack
 
 class MdList(id: Long) : BaseTracker(id, "MDList") {
@@ -31,7 +29,7 @@ class MdList(id: Long) : BaseTracker(id, "MDList") {
             .toImmutableList()
     }
 
-    private val mdex by lazy { MdUtil.getEnabledMangaDex(Injekt.get()) }
+    private val mdex by lazy { MdUtil.getEnabledMangaDex() }
 
     val interceptor = MangaDexAuthInterceptor(trackPreferences, this)
 
