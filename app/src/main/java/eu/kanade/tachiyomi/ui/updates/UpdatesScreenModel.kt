@@ -41,7 +41,6 @@ import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.chapter.interactor.GetChapter
 import tachiyomi.domain.chapter.interactor.UpdateChapter
 import tachiyomi.domain.chapter.model.ChapterUpdate
-import tachiyomi.domain.failed.repository.FailedUpdatesRepository
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetManga
 import tachiyomi.domain.source.service.SourceManager
@@ -65,7 +64,6 @@ class UpdatesScreenModel(
     // SY -->
     readerPreferences: ReaderPreferences = Injekt.get(),
     // SY <--
-    private val failedUpdatesManager: FailedUpdatesRepository = Injekt.get(),
 ) : StateScreenModel<UpdatesScreenModel.State>(State()) {
 
     private val _events: Channel<Event> = Channel(Int.MAX_VALUE)
@@ -90,18 +88,26 @@ class UpdatesScreenModel(
                 getUpdates.subscribe(limit).distinctUntilChanged(),
                 downloadCache.changes,
                 downloadManager.queueState,
-                failedUpdatesManager.hasFailedUpdates(),
-            ) { updates, _, _, iconState -> updates to iconState }
+            ) { updates, _, _ -> updates }
                 .catch {
                     logcat(LogPriority.ERROR, it)
                     _events.send(Event.InternalError)
                 }
-                .collectLatest { (updates, iconState) ->
+                .collectLatest { updates ->
                     mutableState.update { state ->
                         state.copy(
                             isLoading = false,
-                            items = updates.toUpdateItems(),
-                            hasFailedUpdates = iconState,
+                            items = updates.toUpdateItems()
+                                // KMK -->
+                                .groupBy { it.update.mangaId }
+                                .values
+                                .flatMap { mangaChapters ->
+                                    val (unread, read) = mangaChapters.partition { !it.update.read }
+                                    unread.sortedBy { it.update.dateFetch } +
+                                        read.sortedByDescending { it.update.dateFetch }
+                                }
+                                .toPersistentList(),
+                            // KMK <--
                         )
                     }
                 }
@@ -237,16 +243,6 @@ class UpdatesScreenModel(
         toggleAllSelection(false)
     }
 
-    fun fillermarkUpdates(updates: List<UpdatesItem>, fillermark: Boolean) {
-        screenModelScope.launchIO {
-            updates
-                .filterNot { it.update.fillermark == fillermark }
-                .map { ChapterUpdate(id = it.update.chapterId, fillermark = fillermark) }
-                .let { updateChapter.awaitAll(it) }
-        }
-        toggleAllSelection(false)
-    }
-
     /**
      * Downloads the given list of chapters with the manager.
      * @param updatesItem the list of chapters to download.
@@ -296,12 +292,26 @@ class UpdatesScreenModel(
         setDialog(Dialog.DeleteConfirmation(updatesItem))
     }
 
+    // KMK -->
+    /** Bundles all of the boolean flags for update‐selection into one type */
+    data class UpdateSelectionOptions(
+        val selected: Boolean,
+        val userSelected: Boolean = false,
+        val fromLongPress: Boolean = false,
+        val isGroup: Boolean = false,
+        val isExpanded: Boolean = false,
+    )
+    // KMK <--
+
     fun toggleSelection(
         item: UpdatesItem,
-        selected: Boolean,
-        userSelected: Boolean = false,
-        fromLongPress: Boolean = false,
+        // KMK -->
+        selectionOptions: UpdateSelectionOptions,
+        // KMK <--
     ) {
+        // KMK -->
+        val (selected, userSelected, fromLongPress, isGroup, isExpanded) = selectionOptions
+        // KMK <--
         mutableState.update { state ->
             val newItems = state.items.toMutableList().apply {
                 val selectedIndex = indexOfFirst { it.update.chapterId == item.update.chapterId }
@@ -313,6 +323,25 @@ class UpdatesScreenModel(
                 val firstSelection = none { it.selected }
                 set(selectedIndex, selectedItem.copy(selected = selected))
                 selectedChapterIds.addOrRemove(item.update.chapterId, selected)
+
+                // KMK -->
+                if (isGroup && !isExpanded) {
+                    val selectedItemDate = selectedItem.update.dateFetch.toLocalDate()
+                    val zone = java.time.ZoneId.systemDefault()
+                    val dayStartMillis = selectedItemDate.atStartOfDay(zone).toInstant().toEpochMilli()
+                    val dayEndMillis = selectedItemDate.plusDays(1).atStartOfDay(zone).toInstant().toEpochMilli()
+
+                    state.items.mapIndexed { index, item -> index to item }
+                        .filter {
+                            it.second.update.mangaId == selectedItem.update.mangaId &&
+                                it.second.update.dateFetch in dayStartMillis..<dayEndMillis
+                        }
+                        .forEach { (index, item) ->
+                            set(index, item.copy(selected = selected))
+                            selectedChapterIds.addOrRemove(item.update.chapterId, selected)
+                        }
+                }
+                // KMK <--
 
                 if (selected && userSelected && fromLongPress) {
                     if (firstSelection) {
@@ -413,7 +442,6 @@ class UpdatesScreenModel(
         val expandedState: Set<String> = persistentSetOf(),
         // KMK <--
         val dialog: Dialog? = null,
-        val hasFailedUpdates: Boolean = false,
     ) {
         val selected = items.filter { it.selected }
         val selectionMode = selected.isNotEmpty()
@@ -428,13 +456,9 @@ class UpdatesScreenModel(
                         .groupBy { it.update.mangaId }
                         .values
                         .flatMap { mangaChapters ->
-                            val (unread, read) = mangaChapters.partition { !it.update.read }
-                            val sortedChapters = unread.sortedBy { it.update.dateFetch } +
-                                read.sortedByDescending { it.update.dateFetch }
                             val isExpandable = mangaChapters.size > 1
-
                             var lastMangaId = -1L
-                            sortedChapters.map { chapter ->
+                            mangaChapters.map { chapter ->
                                 if (chapter.update.mangaId != lastMangaId) {
                                     lastMangaId = chapter.update.mangaId
                                     UpdatesUiModel.Leader(chapter, isExpandable)
@@ -481,5 +505,5 @@ data class UpdatesItem(
 
 // KMK -->
 /** String to identify which manga's update on which day it is collapsing */
-fun UpdatesWithRelations.groupByDateAndManga() = "$mangaId"
+fun UpdatesWithRelations.groupByDateAndManga() = "${dateFetch.toLocalDate().toEpochDay()}-$mangaId"
 // KMK <--

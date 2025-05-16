@@ -30,7 +30,6 @@ import eu.kanade.presentation.manga.components.MangaBottomActionMenu
 import eu.kanade.tachiyomi.data.download.model.Download
 import eu.kanade.tachiyomi.ui.updates.UpdatesItem
 import eu.kanade.tachiyomi.ui.updates.UpdatesScreenModel
-import eu.kanade.tachiyomi.ui.updates.groupByDateAndManga
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toImmutableList
 import kotlinx.coroutines.delay
@@ -65,7 +64,7 @@ fun UpdateScreen(
     onMultiFillermarkClicked: (List<UpdatesItem>, fillermark: Boolean) -> Unit,
     onMultiMarkAsReadClicked: (List<UpdatesItem>, read: Boolean) -> Unit,
     onMultiDeleteClicked: (List<UpdatesItem>) -> Unit,
-    onUpdateSelected: (UpdatesItem, Boolean, Boolean, Boolean) -> Unit,
+    onUpdateSelected: (UpdatesItem, /* KMK --> */ UpdatesScreenModel.UpdateSelectionOptions /* KMK <-- */) -> Unit,
     onOpenChapter: (UpdatesItem) -> Unit,
     hasFailedUpdates: Boolean,
     // KMK -->
@@ -138,15 +137,8 @@ fun UpdateScreen(
                         updatesLastUpdatedItem(lastUpdated)
 
                         updatesUiItems(
-                            uiModels = state.getUiModel()
-                                // KMK -->
-                                .filter {
-                                    when (it) {
-                                        is UpdatesUiModel.Header, is UpdatesUiModel.Leader -> true
-                                        is UpdatesUiModel.Item ->
-                                            state.expandedState.contains(it.item.update.groupByDateAndManga())
-                                    }
-                                },
+                            uiModels = state.getUiModel(),
+                            // KMK -->
                             expandedState = state.expandedState,
                             collapseToggle = collapseToggle,
                             usePanoramaCover = usePanoramaCover.value,
