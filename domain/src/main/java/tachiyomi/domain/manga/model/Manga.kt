@@ -113,6 +113,7 @@ data class Manga(
             CHAPTER_SHOW_NOT_FILLERMARKED -> TriState.ENABLED_NOT
             else -> TriState.DISABLED
         }
+        
     // KMK -->
     val incognitoMode = customMangaInfo?.incognitoMode ?: false
     // KMK <--
