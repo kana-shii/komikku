@@ -113,6 +113,9 @@ data class Manga(
             CHAPTER_SHOW_NOT_FILLERMARKED -> TriState.ENABLED_NOT
             else -> TriState.DISABLED
         }
+    // KMK -->
+    val incognitoMode = customMangaInfo?.incognitoMode ?: false
+    // KMK <--
 
     fun sortDescending(): Boolean {
         return chapterFlags and CHAPTER_SORT_DIR_MASK == CHAPTER_SORT_DESC
