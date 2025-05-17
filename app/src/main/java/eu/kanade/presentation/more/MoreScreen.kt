@@ -28,7 +28,6 @@ import exh.pref.DelegateSourcePreferences
 import tachiyomi.core.common.Constants
 import tachiyomi.domain.UnsortedPreferences
 import tachiyomi.i18n.MR
-import tachiyomi.i18n.kmk.KMR
 import tachiyomi.i18n.sy.SYMR
 import tachiyomi.presentation.core.components.ScrollbarLazyColumn
 import tachiyomi.presentation.core.components.material.Scaffold
@@ -58,9 +57,6 @@ fun MoreScreen(
     onClickBatchAdd: () -> Unit,
     onClickUpdates: () -> Unit,
     onClickHistory: () -> Unit,
-    // KMK -->
-    onClickLibraryUpdateErrors: () -> Unit,
-    // KMK <--
 ) {
     val uriHandler = LocalUriHandler.current
     // SY -->
@@ -164,14 +160,6 @@ fun MoreScreen(
                     title = stringResource(MR.strings.label_stats),
                     icon = Icons.Outlined.QueryStats,
                     onPreferenceClick = onClickStats,
-                )
-            }
-            // KMK -->
-            item {
-                TextPreferenceWidget(
-                    title = stringResource(KMR.strings.option_label_library_update_errors),
-                    icon = Icons.Outlined.NewReleases,
-                    onPreferenceClick = onClickLibraryUpdateErrors,
                 )
             }
             item {
