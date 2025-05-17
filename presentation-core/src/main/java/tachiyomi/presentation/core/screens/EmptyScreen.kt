@@ -130,7 +130,7 @@ private val ErrorFaces = listOf(
     "(¬_¬)",
 )
 
-private val happyFaces = listOf(
+private val HappyFaces = listOf(
     "(˶ᵔ ᵕ ᵔ˶)",
     "٩(^ᗜ^ )و",
     "ദ്ദി(˵ •̀ ᴗ - ˵ )",
