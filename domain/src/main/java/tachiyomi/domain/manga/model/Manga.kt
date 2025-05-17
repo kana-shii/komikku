@@ -109,6 +109,7 @@ data class Manga(
 
     // KMK -->
     val incognitoMode = customMangaInfo?.incognitoMode ?: false
+
     // KMK <--
     val fillermarkedFilter: TriState
         get() = when (fillermarkedFilterRaw) {
