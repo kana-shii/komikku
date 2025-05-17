@@ -481,10 +481,10 @@ class UpdatesScreenModel(
                 val downloadAction = when (updateItem.downloadStateProvider()) {
                     Download.State.ERROR,
                     Download.State.NOT_DOWNLOADED,
-                        -> ChapterDownloadAction.START_NOW
+                    -> ChapterDownloadAction.START_NOW
                     Download.State.QUEUE,
                     Download.State.DOWNLOADING,
-                        -> ChapterDownloadAction.CANCEL
+                    -> ChapterDownloadAction.CANCEL
                     Download.State.DOWNLOADED -> ChapterDownloadAction.DELETE
                 }
                 downloadChapters(
