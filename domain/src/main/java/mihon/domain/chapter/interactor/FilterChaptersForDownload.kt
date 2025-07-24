@@ -43,9 +43,9 @@ class FilterChaptersForDownload(
 
         // SY -->
         val existingChapters = if (manga.source == MERGED_SOURCE_ID) {
-            getMergedChaptersByMangaId.await(manga.id)
+            getMergedChaptersByMangaId.await(manga.id, applyFilter = true)
         } else {
-            getChaptersByMangaId.await(manga.id)
+            getChaptersByMangaId.await(manga.id, applyFilter = true)
         }
 
         val readChapterNumbers = existingChapters
