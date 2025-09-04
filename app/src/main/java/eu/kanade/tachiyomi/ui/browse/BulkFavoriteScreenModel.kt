@@ -1,5 +1,6 @@
 package eu.kanade.tachiyomi.ui.browse
 
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Immutable
 import androidx.compose.ui.hapticfeedback.HapticFeedback
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
@@ -9,7 +10,9 @@ import androidx.compose.ui.util.fastForEach
 import androidx.compose.ui.util.fastForEachIndexed
 import cafe.adriel.voyager.core.model.StateScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
+import eu.kanade.domain.chapter.interactor.SyncChaptersWithSource
 import eu.kanade.domain.manga.interactor.UpdateManga
+import eu.kanade.domain.manga.model.toSManga
 import eu.kanade.domain.track.interactor.AddTracks
 import eu.kanade.presentation.components.BulkSelectionToolbar
 import eu.kanade.presentation.manga.DuplicateMangaDialog
@@ -24,14 +27,18 @@ import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import logcat.LogPriority
 import tachiyomi.core.common.preference.CheckboxState
 import tachiyomi.core.common.preference.mapAsCheckboxState
 import tachiyomi.core.common.util.lang.launchIO
 import tachiyomi.core.common.util.lang.launchNonCancellable
+import tachiyomi.core.common.util.lang.withIOContext
+import tachiyomi.core.common.util.system.logcat
 import tachiyomi.domain.category.interactor.GetCategories
 import tachiyomi.domain.category.interactor.SetMangaCategories
 import tachiyomi.domain.category.model.Category
 import tachiyomi.domain.chapter.interactor.SetMangaDefaultChapterFlags
+import tachiyomi.domain.chapter.model.NoChaptersException
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.manga.interactor.GetDuplicateLibraryManga
 import tachiyomi.domain.manga.model.Manga
@@ -53,6 +60,10 @@ class BulkFavoriteScreenModel(
     private val coverCache: CoverCache = Injekt.get(),
     private val setMangaDefaultChapterFlags: SetMangaDefaultChapterFlags = Injekt.get(),
     private val addTracks: AddTracks = Injekt.get(),
+    // KMK -->
+    private val syncChaptersWithSource: SyncChaptersWithSource = Injekt.get(),
+    val snackbarHostState: SnackbarHostState = SnackbarHostState(),
+    // KMK <--
 ) : StateScreenModel<BulkFavoriteScreenModel.State>(initialState) {
 
     fun backHandler() {
@@ -239,11 +250,43 @@ class BulkFavoriteScreenModel(
     }
 
     private fun moveMangaToCategoriesAndAddToLibrary(manga: Manga, categories: List<Long>) {
+        val source = sourceManager.getOrStub(manga.source)
         moveMangaToCategory(manga.id, categories)
         if (manga.favorite) return
 
         screenModelScope.launchIO {
             updateManga.awaitUpdateFavorite(manga.id, true)
+            setMangaDefaultChapterFlags.await(manga)
+            val new = manga.copy(
+                favorite = !manga.favorite,
+                dateAdded = when (manga.favorite) {
+                    true -> 0
+                    false -> Instant.now().toEpochMilli()
+                },
+            )
+            updateManga.await(new.toMangaUpdate().copy(chapterFlags = null))
+            if (new.favorite) {
+                try {
+                    withIOContext {
+                        val networkManga = source.getMangaDetails(new.toSManga())
+                        updateManga.awaitUpdateFromSource(manga, networkManga, false, coverCache)
+                        val chapters = source.getChapterList(new.toSManga())
+                        syncChaptersWithSource.await(chapters, new, source, false)
+                    }
+                } catch (e: Throwable) {
+                    val message = if (e is NoChaptersException) {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        "No Chapters found"
+                    } else {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        logcat(LogPriority.ERROR, e) { "Error while syncing chapters" }
+                    }
+                    screenModelScope.launch {
+                        snackbarHostState.showSnackbar(message = message.toString())
+                    }
+                }
+            }
+            // KMK <--
         }
     }
 
@@ -326,7 +369,30 @@ class BulkFavoriteScreenModel(
                 addTracks.bindEnhancedTrackers(manga, source)
             }
 
-            updateManga.await(new.toMangaUpdate())
+            updateManga.await(new.toMangaUpdate().copy(chapterFlags = null))
+            // KMK -->
+            if (new.favorite) {
+                try {
+                    withIOContext {
+                        val networkManga = source.getMangaDetails(new.toSManga())
+                        updateManga.awaitUpdateFromSource(manga, networkManga, false, coverCache)
+                        val chapters = source.getChapterList(new.toSManga())
+                        syncChaptersWithSource.await(chapters, new, source, false)
+                    }
+                } catch (e: Throwable) {
+                    val message = if (e is NoChaptersException) {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        "No Chapters found"
+                    } else {
+                        @Suppress("IMPLICIT_CAST_TO_ANY")
+                        logcat(LogPriority.ERROR, e) { "Error while syncing chapters" }
+                    }
+                    screenModelScope.launch {
+                        snackbarHostState.showSnackbar(message = message.toString())
+                    }
+                }
+            }
+            // KMK <--
         }
     }
 
